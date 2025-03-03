@@ -1,0 +1,19 @@
+# 빌드 결과물 제외
+bin/
+obj/
+
+# NuGet 패키지 제외
+packages/
+*.nupkg
+project.lock.json
+project.assets.json
+
+# Visual Studio 설정 파일 제외
+.vs/
+*.suo
+*.user
+*.cache
+*.db
+
+# 환경 설정 파일 (필요하면 예외 처리)
+appsettings.Development.json

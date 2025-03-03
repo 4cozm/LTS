@@ -75,19 +75,24 @@
     ]
   },
   "packageFolders": {
-    "/Users/anhong-geol/.nuget/packages/": {}
+    "C:\\Users\\17328\\.nuget\\packages\\": {},
+    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/Users/anhong-geol/Desktop/LTS/LTS.csproj",
+      "projectUniqueName": "C:\\GitProjects\\.github\\LTS\\LTS.csproj",
       "projectName": "LTS",
-      "projectPath": "/Users/anhong-geol/Desktop/LTS/LTS.csproj",
-      "packagesPath": "/Users/anhong-geol/.nuget/packages/",
-      "outputPath": "/Users/anhong-geol/Desktop/LTS/obj/",
+      "projectPath": "C:\\GitProjects\\.github\\LTS\\LTS.csproj",
+      "packagesPath": "C:\\Users\\17328\\.nuget\\packages\\",
+      "outputPath": "C:\\GitProjects\\.github\\LTS\\obj\\",
       "projectStyle": "PackageReference",
+      "fallbackFolders": [
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+      ],
       "configFilePaths": [
-        "/Users/anhong-geol/.nuget/NuGet/NuGet.Config"
+        "C:\\Users\\17328\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config"
       ],
       "originalTargetFrameworks": [
         "net9.0"
@@ -141,7 +146,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.200/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.200/PortableRuntimeIdentifierGraph.json"
       }
     }
   }
