@@ -1,46 +1,38 @@
 body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  height:100%;
+}
+.LTS_logo {
+  width: 50%;
 }
 
 .header {
-    background-color: #333;
-    color: white;
-    padding: 10px 0;
-    text-align: center;
+  background-color: #343434;
+  color: white;
+  padding: 10px 0;
+  text-align: center;
 }
 
 .container {
-    width: 80%;
-    margin: 0 auto;
-}
-
-nav ul {
-    list-style-type: none;
-    padding: 0;
-}
-
-nav ul li {
-    display: inline;
-    margin-right: 10px;
-}
-
-.nav-link {
-    text-decoration: none;
-    color: #333;
-}
-
-.nav-link:hover {
-    text-decoration: underline;
+  width: 80%;
+  margin: 0 auto;
 }
 
 .footer {
-    background-color: #333;
-    color: white;
-    text-align: center;
-    padding: 10px 0;
-    position: fixed;
-    width: 100%;
-    bottom: 0;
+  position: fixed;
+  background-color: #343434;
+  padding: 10px 0;
+  width: 100%;
+  height: 5%;
+  bottom: 0;
+}
+.footer-container {
+  position: absolute;
+  color: white;
+  bottom: 0;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 10px;
 }
