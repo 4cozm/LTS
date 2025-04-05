@@ -28,7 +28,8 @@ namespace LTS.Pages
             {
                 return RedirectToPage("/Main");
             }
-            ModelState.AddModelError("FailedMessage", "로그인 정보가 올바르지 않습니다.");
+            ModelState.AddModelError("Password", "비밀번호가 올바르지 않습니다.");
+            ModelState.AddModelError("Username", "아이디가 올바르지 않습니다.");
             return Page();
         }
 

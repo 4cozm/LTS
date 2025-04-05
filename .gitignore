@@ -18,9 +18,3 @@ project.assets.json
 
 # 환경 설정 파일 (필요하면 예외 처리)
 appsettings.Development.json
-
-# npm 관련 파일 제외
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
