@@ -1,4 +1,3 @@
-CREATE DATABASE lts_core CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 USE lts_core;
 -- 회원 정보 테이블
