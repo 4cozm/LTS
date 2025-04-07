@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace LTS.Pages
 {
-    
     public class IndexModel : PageModel
     {
 
@@ -17,9 +16,7 @@ namespace LTS.Pages
         [Required(ErrorMessage ="비밀번호를 입력해 주세요")]
         public string? Password {get;set;}
 
-        public string? FailedMessage { get; set; }
         public IActionResult OnPost(){
-            Console.WriteLine("🔥 OnPost 실행됨!");
             if (!ModelState.IsValid)
             {
                 return Page();
