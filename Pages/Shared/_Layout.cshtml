@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - LTS 쿠폰 시스템</title>
+    <link rel="stylesheet" href="/css/Layout.css" />
+    @RenderSection("Styles",required:false)
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <img class="LTS_logo" src="/images/LTS_logo.webp" alt="error-LTS logo" />
+        </div>
+    </header>
+    <div class="container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+    <footer class="footer"></footer>
+        <div class="footer-container">
+            &copy; 2025 - Laser Tag Sports
+        </div>
+    </footer>
+        @RenderSection("Scripts", required: false)
+</body>
+</html>
