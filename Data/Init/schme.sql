@@ -1,4 +1,6 @@
 
+
+--⚠️스키마 추가/변경시 Models에 있는 Dapper 타입 추론용 모델도 수정해야함.
 USE lts_core;
 -- 회원 정보 테이블
 CREATE TABLE users (
