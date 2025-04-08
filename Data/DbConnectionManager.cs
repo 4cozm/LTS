@@ -9,7 +9,7 @@ public static class DbManager
 {
     private static string _connectionString = "";
 
-    public static void Configure()
+    static DbManager()
     {
         _connectionString = $"Server={EnvConfig.MySqlIp};Uid={EnvConfig.MySqlUserName};Pwd={EnvConfig.MySqlPassword};Pooling=true;";
     }
@@ -25,6 +25,7 @@ public static class DbManager
         catch (MySqlException ex)
         {
             Console.WriteLine($"DB 연결 실패: {ex.Message}");
+            
             return null;
         }
     }
