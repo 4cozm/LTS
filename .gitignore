@@ -18,3 +18,4 @@ project.assets.json
 
 # 환경 설정 파일 (필요하면 예외 처리)
 appsettings.Development.json
+.env
