@@ -1,16 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
-using Azure.Identity;
-using DotNetEnv;
+using LTS.Configuration;
 
-Env.Load();
 var builder = WebApplication.CreateBuilder(args);
-var envVar = Environment.GetEnvironmentVariable("ENV");
-Console.WriteLine($"🌱 현재 빌드 환경: {envVar}");
+EnvConfig.Configure(builder);
 
-// Azure Key Vault 연동
-builder.Configuration.AddAzureKeyVault(
-    new Uri("https://ltsdevkey.vault.azure.net/"),
-    new DefaultAzureCredential());
 
 // Razor Pages 설정 및 Antiforgery
 builder.Services.AddRazorPages(options =>
