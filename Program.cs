@@ -17,3 +17,4 @@ app.UseStaticFiles();
 app.UseRouting();
 app.MapRazorPages();
 app.Run();
+Console.WriteLine("서버 작동 ✅");
