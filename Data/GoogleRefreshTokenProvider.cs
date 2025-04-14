@@ -45,7 +45,7 @@ public static class GoogleRefreshTokenProvider
 
     public static GoogleAuthState AuthState => _authState;
     // 인증 URL을 출력하는 메서드
-    public static void PrintGoogleOAuthUrl(bool isDevelopment)
+    public static void PrintGoogleOAuthUrl(string redirectUri)
     {
         if (AuthState.IsValidAuthProcess())  // 인증이 진행 중이고 타임아웃되지 않았다면
         {
@@ -55,10 +55,6 @@ public static class GoogleRefreshTokenProvider
 
         var clientId = EnvConfig.GoogleApiId;
         var scope = "https://www.googleapis.com/auth/spreadsheets";
-        var redirectUri = isDevelopment
-            ? "https://localhost:5501/oauth2callback"
-            : "https://ltsga.ddns.net/oauth2callback";
-
         var authUrl = $"https://accounts.google.com/o/oauth2/v2/auth?" +
                       $"scope={Uri.EscapeDataString(scope)}&" +
                       $"access_type=offline&" +
@@ -87,7 +83,7 @@ public static class GoogleRefreshTokenProvider
                 { "code", code },
                 { "client_id", EnvConfig.GoogleApiId },
                 { "client_secret", EnvConfig.GoogleApiPw },
-                { "redirect_uri", "https://localhost:5501/oauth2callback" }, // 개발 환경의 URI 사용
+                { "redirect_uri", EnvConfig.GoogleRedirectUri },
                 { "grant_type", "authorization_code" }
             };
 
@@ -101,8 +97,7 @@ public static class GoogleRefreshTokenProvider
             throw new InvalidOperationException("Refresh token 발급 실패. prompt=consent을 확인하세요.");
         }
 
-        var refreshToken = refreshTokenElement.GetString();
-
+        var refreshToken = refreshTokenElement.GetString() ?? throw new InvalidOperationException("Refresh token is missing from Google");
         // 인증이 끝났으므로 상태를 false로 설정
         AuthState.EndAuthProcess();  // 인증 종료
 
