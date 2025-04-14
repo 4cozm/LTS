@@ -107,7 +107,8 @@ public static class GoogleRefreshTokenProvider
         var secretClient = new SecretClient(new Uri(keyVaultUrl), new DefaultAzureCredential());
 
         await secretClient.SetSecretAsync("GOOGLE-API-REFRESH-TOKEN", refreshToken);
-
+        EnvConfig.GoogleApiRefreshToken = refreshToken;
         Console.WriteLine("✅ Refresh token이 Azure Key Vault에 성공적으로 저장되었습니다.");
+
     }
 }

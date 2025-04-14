@@ -15,8 +15,9 @@ public static class EnvConfig
 
     public static string GoogleApiId { get; private set; } = "";
     public static string GoogleApiPw { get; private set; } = "";
-    public static string? GoogleApiRefreshToken { get; private set; }
-
+    public static string? GoogleApiRefreshToken { get; set; }
+    public static string? AccessToken { get; set; }
+    public static DateTime AccessTokenExpiry { get; set; } = DateTime.MinValue;
     public static string GoogleRedirectUri { get; private set; } = "";
     public static void Configure(WebApplicationBuilder builder)
     {
@@ -56,6 +57,10 @@ public static class EnvConfig
             Console.WriteLine("🚨 Refresh Token이 없음. 구글 인증을 통해 발급 시도 중...");
             GoogleRefreshTokenProvider.PrintGoogleOAuthUrl(GoogleRedirectUri);
         }
-        Console.WriteLine("환경 변수 로드 ✅");
+        else
+        {
+            Console.WriteLine("환경 변수 로드 ✅");
+        }
+
     }
 }

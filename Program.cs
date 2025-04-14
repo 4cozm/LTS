@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using LTS.Configuration;
+using LTS.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 EnvConfig.Configure(builder);
@@ -16,5 +17,5 @@ var app = builder.Build();
 app.UseStaticFiles();
 app.UseRouting();
 app.MapRazorPages();
-app.Run();
 Console.WriteLine("서버 작동 ✅");
+app.Run();
