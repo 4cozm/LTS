@@ -3,6 +3,7 @@
 
 using Azure.Identity;
 using DotNetEnv;
+using LTS.Data;
 namespace LTS.Configuration;
 public static class EnvConfig
 {
@@ -46,10 +47,12 @@ public static class EnvConfig
         }
         //공통 사용 환경변수 
         GoogleApiRefreshToken = builder.Configuration["GOOGLE-API-REFRESH-TOKEN"];
+        GoogleApiPw = builder.Configuration["GOOGLE-API-CLIENT-PW"]?? throw new InvalidOperationException("GOOGLE-API-CLIENT-PW is missing");
+        GoogleApiId = builder.Configuration["GOOGLE-API-CLIENT-ID"]?? throw new InvalidOperationException("GOOGLE-API-CLIENT-ID is missing");
         if (string.IsNullOrEmpty(GoogleApiRefreshToken))
         {
             Console.WriteLine("🚨 Refresh Token이 없음. 구글 인증을 통해 발급 시도 중...");
-
+            GoogleRefreshTokenProvider.PrintGoogleOAuthUrl(IsDevelopment);
         }
         Console.WriteLine("환경 변수 로드 ✅");
     }
