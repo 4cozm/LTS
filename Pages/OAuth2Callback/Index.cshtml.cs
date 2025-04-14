@@ -7,12 +7,7 @@ namespace LTS.Pages.OAuth2Callback
     {
         public async Task OnGetAsync(string code)
         {
-            Console.WriteLine(code);
-            // 여기서 code를 넘겨주어 Google OAuth callback 처리
-            var refreshToken = await GoogleRefreshTokenProvider.HandleGoogleOAuthCallback(code);
-
-            // 받은 refreshToken을 원하는 방식으로 사용
-            // 예: return View(refreshToken);
+            await GoogleRefreshTokenProvider.HandleGoogleOAuthCallback(code);
         }
     }
 }

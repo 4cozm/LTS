@@ -1,5 +1,7 @@
 using LTS.Configuration;
 using System.Text.Json;
+using Azure.Identity;
+using Azure.Security.KeyVault.Secrets;
 namespace LTS.Data;
 
 public class GoogleAuthState
@@ -70,7 +72,7 @@ public static class GoogleRefreshTokenProvider
     }
 
     // 인증 코드 처리 후 상태 변경
-    public static async Task<string> HandleGoogleOAuthCallback(string code)
+    public static async Task HandleGoogleOAuthCallback(string code)
     {
         if (!AuthState.IsValidAuthProcess())  // 인증이 진행 중이지 않거나 타임아웃된 경우
         {
@@ -101,9 +103,11 @@ public static class GoogleRefreshTokenProvider
         // 인증이 끝났으므로 상태를 false로 설정
         AuthState.EndAuthProcess();  // 인증 종료
 
-        // Azure Vault에 저장 (이 예시에서는 저장을 생략)
-        // await client.SetSecretAsync("GOOGLE-API-REFRESH-TOKEN", refreshToken);
+        var keyVaultUrl = "https://ltsdevkey.vault.azure.net/";
+        var secretClient = new SecretClient(new Uri(keyVaultUrl), new DefaultAzureCredential());
 
-        return refreshToken;
+        await secretClient.SetSecretAsync("GOOGLE-API-REFRESH-TOKEN", refreshToken);
+
+        Console.WriteLine("✅ Refresh token이 Azure Key Vault에 성공적으로 저장되었습니다.");
     }
 }
