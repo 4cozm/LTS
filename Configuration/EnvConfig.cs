@@ -12,6 +12,10 @@ public static class EnvConfig
     public static string MySqlIp { get; private set; } = "";
     public static string MySqlPassword { get; private set; } = "";
 
+    public static string GoogleApiId { get; private set; } = "";
+    public static string GoogleApiPw { get; private set; } = "";
+    public static string GoogleApiRefreshToken { get; private set; } = "";
+
     public static void Configure(WebApplicationBuilder builder)
     {
         Env.Load();
@@ -39,6 +43,13 @@ public static class EnvConfig
             MySqlUserName = builder.Configuration["MYSQL-USERNAME"] ?? throw new InvalidOperationException("MYSQL-USERNAME is missing");
             MySqlIp = builder.Configuration["MYSQL-IP"] ?? throw new InvalidOperationException("MYSQL-IP is missing");
             MySqlPassword = builder.Configuration["MYSQL-PASSWORD"] ?? throw new InvalidOperationException("MYSQL-PASSWORD is missing");
+        }
+        //공통 사용 환경변수 
+        GoogleApiRefreshToken = builder.Configuration["GOOGLE-API-REFRESH-TOKEN"];
+        if (string.IsNullOrEmpty(GoogleApiRefreshToken))
+        {
+            Console.WriteLine("🚨 Refresh Token이 없음. 구글 인증을 통해 발급 시도 중...");
+
         }
         Console.WriteLine("환경 변수 로드 ✅");
     }
