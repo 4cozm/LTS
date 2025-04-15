@@ -10,9 +10,9 @@ public static class GetGoogleAccessToken
     public static async Task<string> GetAsync()
     {
         // 만료되지 않았다면 캐시된 토큰 사용
-        if (!string.IsNullOrEmpty(EnvConfig.AccessToken) && DateTime.UtcNow < EnvConfig.AccessTokenExpiry)
+        if (!string.IsNullOrEmpty(EnvConfig.GoogleSheetAccessToken) && DateTime.UtcNow < EnvConfig.GoogleSheetAccessTokenExpiry)
         {
-            return EnvConfig.AccessToken!;
+            return EnvConfig.GoogleSheetAccessToken!;
         }
 
         // 새 access token 발급
@@ -28,12 +28,12 @@ public static class GetGoogleAccessToken
         var json = await response.Content.ReadAsStringAsync();
         var parsed = JsonDocument.Parse(json).RootElement;
 
-        var accessToken = parsed.GetProperty("access_token").GetString()!;
+        var GoogleSheetAccessToken = parsed.GetProperty("access_token").GetString()!;
         var expiresIn = parsed.GetProperty("expires_in").GetInt32(); // 보통 3600초
 
-        EnvConfig.AccessToken = accessToken;
-        EnvConfig.AccessTokenExpiry = DateTime.UtcNow.AddSeconds(expiresIn - 60); // 안전하게 1분 여유
+        EnvConfig.GoogleSheetAccessToken = GoogleSheetAccessToken;
+        EnvConfig.GoogleSheetAccessTokenExpiry = DateTime.UtcNow.AddSeconds(expiresIn - 60); // 안전하게 1분 여유
 
-        return accessToken;
+        return GoogleSheetAccessToken;
     }
 }

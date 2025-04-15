@@ -1,5 +1,7 @@
 //환경 변수와 관련된 세팅
 //사용하는 기술 Azure Vault
+using Google.Apis.Auth.OAuth2;
+using System.Text;
 
 using Azure.Identity;
 using DotNetEnv;
@@ -16,9 +18,12 @@ public static class EnvConfig
     public static string GoogleApiId { get; private set; } = "";
     public static string GoogleApiPw { get; private set; } = "";
     public static string? GoogleApiRefreshToken { get; set; }
-    public static string? AccessToken { get; set; }
-    public static DateTime AccessTokenExpiry { get; set; } = DateTime.MinValue;
+    public static string? GoogleSheetAccessToken { get; set; }
+    public static DateTime GoogleSheetAccessTokenExpiry { get; set; } = DateTime.MinValue;
     public static string GoogleRedirectUri { get; private set; } = "";
+    private static string FirebaseSecretJson = string.Empty; //JSON파싱 이후에 쓸수있는 값이라 private 선언
+    public static GoogleCredential? FirebaseCredential = null;//실제 firebase api를 쓸때 사용하는 키
+    private static readonly string[] FirebaseScopes = ["https://www.googleapis.com/auth/firebase.database", "https://www.googleapis.com/auth/userinfo.email"];
     public static void Configure(WebApplicationBuilder builder)
     {
         Env.Load();
@@ -48,9 +53,13 @@ public static class EnvConfig
             MySqlPassword = builder.Configuration["MYSQL-PASSWORD"] ?? throw new InvalidOperationException("MYSQL-PASSWORD is missing");
         }
         //공통 사용 환경변수 
+        FirebaseSecretJson = builder.Configuration["FIREBASE-DB"] ?? throw new InvalidOperationException("FIREBASE-DB is missing");
+        FirebaseCredential = GoogleCredential.FromStream(new MemoryStream(Encoding.UTF8.GetBytes(FirebaseSecretJson))).CreateScoped(FirebaseScopes);
+
         GoogleRedirectUri = IsDevelopment ? "https://localhost:5501/oauth2callback" : "https://ltsga.ddns.net/oauth2callback";
         GoogleApiPw = builder.Configuration["GOOGLE-API-CLIENT-PW"] ?? throw new InvalidOperationException("GOOGLE-API-CLIENT-PW is missing");
         GoogleApiId = builder.Configuration["GOOGLE-API-CLIENT-ID"] ?? throw new InvalidOperationException("GOOGLE-API-CLIENT-ID is missing");
+
         GoogleApiRefreshToken = builder.Configuration["GOOGLE-API-REFRESH-TOKEN"];
         if (string.IsNullOrEmpty(GoogleApiRefreshToken))
         {
