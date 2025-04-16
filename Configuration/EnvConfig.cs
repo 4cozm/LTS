@@ -21,6 +21,9 @@ public static class EnvConfig
     public static string? GoogleSheetAccessToken { get; set; }
     public static DateTime GoogleSheetAccessTokenExpiry { get; set; } = DateTime.MinValue;
     public static string GoogleRedirectUri { get; private set; } = "";
+    public static string GooglePrePaidSheetId { get; private set; } = "";
+    public static string GoogleCouponSheetId { get; private set; } = "";
+
     private static string FirebaseSecretJson = string.Empty; //JSON파싱 이후에 쓸수있는 값이라 private 선언
     public static GoogleCredential? FirebaseCredential = null;//실제 firebase api를 쓸때 사용하는 키
     private static readonly string[] FirebaseScopes = ["https://www.googleapis.com/auth/firebase.database", "https://www.googleapis.com/auth/userinfo.email"];
@@ -43,6 +46,8 @@ public static class EnvConfig
             MySqlUserName = builder.Configuration["MYSQL-DEV-USERNAME"] ?? throw new InvalidOperationException("MYSQL-DEV-USERNAME is missing");
             MySqlIp = builder.Configuration["MYSQL-DEV-IP"] ?? throw new InvalidOperationException("MYSQL-DEV-IP is missing");
             MySqlPassword = builder.Configuration["MYSQL-DEV-PASSWORD"] ?? throw new InvalidOperationException("MYSQL-DEV-PASSWORD is missing");
+            FirebaseSecretJson = builder.Configuration["FIREBASE-DB-DEV"] ?? throw new InvalidOperationException("FIREBASE-DB-DEV is missing");
+            GooglePrePaidSheetId = builder.Configuration["GOOGLE-SHEET-PREPAID-DEV"] ?? throw new InvalidOperationException("GOOGLE-SHEET-PREPAID-DEV is missing");
         }
         else
         {
@@ -51,9 +56,10 @@ public static class EnvConfig
             MySqlUserName = builder.Configuration["MYSQL-USERNAME"] ?? throw new InvalidOperationException("MYSQL-USERNAME is missing");
             MySqlIp = builder.Configuration["MYSQL-IP"] ?? throw new InvalidOperationException("MYSQL-IP is missing");
             MySqlPassword = builder.Configuration["MYSQL-PASSWORD"] ?? throw new InvalidOperationException("MYSQL-PASSWORD is missing");
+            FirebaseSecretJson = builder.Configuration["FIREBASE-DB"] ?? throw new InvalidOperationException("FIREBASE-DB is missing");
+            GooglePrePaidSheetId = builder.Configuration["GOOGLE-SHEET-PREPAID"] ?? throw new InvalidOperationException("GOOGLE-SHEET-PREPAID-DEV is missing");
         }
         //공통 사용 환경변수 
-        FirebaseSecretJson = builder.Configuration["FIREBASE-DB"] ?? throw new InvalidOperationException("FIREBASE-DB is missing");
         FirebaseCredential = GoogleCredential.FromStream(new MemoryStream(Encoding.UTF8.GetBytes(FirebaseSecretJson))).CreateScoped(FirebaseScopes);
 
         GoogleRedirectUri = IsDevelopment ? "https://localhost:5501/oauth2callback" : "https://ltsga.ddns.net/oauth2callback";
