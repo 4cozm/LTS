@@ -1,17 +1,17 @@
-body {
-  font-family: Arial, sans-serif;
+html, body {
+  height: 100%;
   margin: 0;
   padding: 0;
-  height:100%;
+  font-family: Arial, sans-serif;
 }
 .LTS_logo {
-  width: 50%;
+  width: 30%;
 }
 
 .header {
   background-color: #343434;
   color: white;
-  padding: 10px 0;
+  padding: 10px 0px;
   text-align: center;
 }
 
@@ -27,12 +27,13 @@ body {
   width: 100%;
   height: 5%;
   bottom: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
+
 .footer-container {
-  position: absolute;
   color: white;
-  bottom: 0;
-  left: 50%;
-  transform: translate(-50%, -50%);
   padding: 10px;
 }
