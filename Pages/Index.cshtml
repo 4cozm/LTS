@@ -8,6 +8,7 @@
 
     <form class="form-container" method="post">
         @Html.AntiForgeryToken()
+        <div asp-validation-summary="All" class="text-danger"></div>
 
         <div class="form-floating mb-3">
             <input asp-for="Username" class="form-control" id="floatingUsername" placeholder="아이디 입력" />
