@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace LTS.Validators
 {
-    public class ValidStoreNameAttribute : ValidationAttribute
+    public class ValidNameAttribute : ValidationAttribute
     {
         protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
         {

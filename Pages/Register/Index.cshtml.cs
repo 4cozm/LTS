@@ -21,7 +21,7 @@ namespace LTS.Pages.Register
         public DateTime? EffectiveDate { get; set; }
 
         [BindProperty]
-        [ValidStoreName]
+        [ValidName]
         public string? StoreName { get; set; }
 
         [BindProperty]
@@ -39,9 +39,12 @@ namespace LTS.Pages.Register
 
             if (!ModelState.IsValid)
             {
-
                 return Page();
             }
+            //1. 토큰을 검사해서 이름,직책 가져옴
+            //2. 권한 있는지 조건문으로 확인
+            //3. DB에 저장
+            //4. 문자발송(예정)
 
 
             return RedirectToPage("Success"); // 성공 페이지로 리디렉션 (예정)
