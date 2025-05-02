@@ -27,6 +27,7 @@ public static class EnvConfig
     private static string FirebaseSecretJson = string.Empty; //JSON파싱 이후에 쓸수있는 값이라 private 선언
     public static GoogleCredential? FirebaseCredential = null;//실제 firebase api를 쓸때 사용하는 키
     private static readonly string[] FirebaseScopes = ["https://www.googleapis.com/auth/firebase.database", "https://www.googleapis.com/auth/userinfo.email"];
+    public static string JwtSecret { get; private set; } = "";
     public static void Configure(WebApplicationBuilder builder)
     {
         Env.Load();
@@ -48,6 +49,7 @@ public static class EnvConfig
             MySqlPassword = builder.Configuration["MYSQL-DEV-PASSWORD"] ?? throw new InvalidOperationException("MYSQL-DEV-PASSWORD is missing");
             FirebaseSecretJson = builder.Configuration["FIREBASE-DB-DEV"] ?? throw new InvalidOperationException("FIREBASE-DB-DEV is missing");
             GooglePrePaidSheetId = builder.Configuration["GOOGLE-SHEET-PREPAID-DEV"] ?? throw new InvalidOperationException("GOOGLE-SHEET-PREPAID-DEV is missing");
+            JwtSecret =builder.Configuration["JWT-SECRET-DEV"] ?? throw new InvalidOperationException("JWT-SECRET-DEV is missing");
         }
         else
         {
@@ -58,6 +60,7 @@ public static class EnvConfig
             MySqlPassword = builder.Configuration["MYSQL-PASSWORD"] ?? throw new InvalidOperationException("MYSQL-PASSWORD is missing");
             FirebaseSecretJson = builder.Configuration["FIREBASE-DB"] ?? throw new InvalidOperationException("FIREBASE-DB is missing");
             GooglePrePaidSheetId = builder.Configuration["GOOGLE-SHEET-PREPAID"] ?? throw new InvalidOperationException("GOOGLE-SHEET-PREPAID-DEV is missing");
+            JwtSecret =builder.Configuration["JWT-SECRET"] ?? throw new InvalidOperationException("JWT-SECRET is missing");
         }
         //공통 사용 환경변수 
         FirebaseCredential = GoogleCredential.FromStream(new MemoryStream(Encoding.UTF8.GetBytes(FirebaseSecretJson))).CreateScoped(FirebaseScopes);
