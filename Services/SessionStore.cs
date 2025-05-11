@@ -7,12 +7,13 @@ public class SessionStore
 {
     private static readonly ConcurrentDictionary<string, (Employee Employee, DateTime ExpireAt)> _sessions = [];
 
-public static string CreateSession(Employee employee, DateTime expireAt)
-{
-    var token = Guid.NewGuid().ToString();
-    _sessions[token] = (employee, expireAt);
-    return token;
-}
+    public static string CreateSession(Employee employee)
+    {
+        var expireAt = DateTime.UtcNow.AddHours(4);
+        var token = Guid.NewGuid().ToString();
+        _sessions[token] = (employee, expireAt);
+        return token;
+    }
 
     public static Employee? GetSession(string token)
     {
@@ -21,7 +22,7 @@ public static string CreateSession(Employee employee, DateTime expireAt)
             if (session.ExpireAt > DateTime.UtcNow)
                 return session.Employee;
 
-            _sessions.TryRemove(token,out _);
+            _sessions.TryRemove(token, out _);
         }
         return null;
     }
