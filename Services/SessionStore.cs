@@ -6,15 +6,14 @@ namespace LTS.Services;
 public class SessionStore
 {
     private static readonly ConcurrentDictionary<string, (Employee Employee, DateTime ExpireAt)> _sessions = [];
-
-    public static string CreateSession(Employee employee)
+    
+    public static SessionInfo CreateSession(Employee employee)
     {
-        var expireAt = DateTime.UtcNow.AddHours(4);
+        var expireAt = DateTime.UtcNow.AddHours(4); // 4시간 후 만료
         var token = Guid.NewGuid().ToString();
         _sessions[token] = (employee, expireAt);
-        return token;
+        return new SessionInfo(token, expireAt);
     }
-
     public static Employee? GetSession(string token)
     {
         if (_sessions.TryGetValue(token, out var session))

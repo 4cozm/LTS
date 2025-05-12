@@ -30,7 +30,14 @@ namespace LTS.Pages
             }
             try
             {
-                var token = _loginService.TryLogin(Username, Password);
+                var session = _loginService.TryLogin(Username, Password);
+                Response.Cookies.Append("LTS-Session", session.Token, new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true,
+                    Expires = session.ExpireAt,
+                    SameSite = SameSiteMode.Strict
+                });
                 return RedirectToPage("/Home");
             }
             catch (UnauthorizedAccessException ex)

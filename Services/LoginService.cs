@@ -1,4 +1,6 @@
 using LTS.Data.Repository;
+using LTS.Models;
+
 
 namespace LTS.Services;
 public class LoginService
@@ -10,21 +12,17 @@ public class LoginService
     {
         _repo = repo;
     }
-    public string TryLogin(string initials, string password)
+    public SessionInfo TryLogin(string initials, string password)
     {
         var employee = _repo.GetEmployeeByInitial(initials);
 
         if (employee == null || employee.Password == null)
-        {
             throw new UnauthorizedAccessException("해당 사용자 정보를 찾을 수 없습니다.");
-        }
 
         if (!VerifyPassword(password, employee.Password))
-        {
             throw new UnauthorizedAccessException("비밀번호가 잘못되었습니다.");
-        }
-        var token = SessionStore.CreateSession(employee);
-        return token;
+
+        return SessionStore.CreateSession(employee);
     }
 
     private static bool VerifyPassword(string input, string inDbPassword)
