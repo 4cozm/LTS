@@ -105,7 +105,7 @@ CREATE TABLE employees (
     password VARCHAR(255) NOT NULL,        -- 비밀번호
     is_password_changed BOOLEAN DEFAULT FALSE, -- 초기 비밀번호 계속 사용하고 있는지 여부
     store VARCHAR(50) NOT NULL,            -- 근무 매장명 또는 매장 ID
-    position VARCHAR(50) NOT NULL,         -- 직책 (staff,manager,owner)
+    role_name VARCHAR(50) NOT NULL,         -- 직책 (staff,manager,owner)
     work_start_date DATE NOT NULL,         -- 근무 시작일
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- 가입일
     created_by_member VARCHAR(20)         -- 가입을 진행한 사람
