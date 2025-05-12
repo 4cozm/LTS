@@ -9,7 +9,7 @@ namespace LTS.Pages.Register
     {
         [BindProperty]
         [StringLength(5, MinimumLength = 2, ErrorMessage = "이니셜은 2~5글자여야 합니다.")]
-        [RegularExpression(@"^[a-zA-Z]+$", ErrorMessage = "이니셜은 영문자만 포함해야 합니다.")]
+        [RegularExpression(@"^[A-Z]+$", ErrorMessage = "이니셜은 영어 대문자만 포함해야 합니다.")]
         public string? Initial { get; set; }
 
         [BindProperty]
@@ -33,7 +33,7 @@ namespace LTS.Pages.Register
         {
             if (EffectiveDate > DateTime.Today)
             {
-                ModelState.AddModelError("EffectiveDate", "미래는 선택할 수 없습니다 - SKY NET");
+                ModelState.AddModelError("EffectiveDate", "미래는 선택할 수 없습니다");
                 return Page();
             }
 

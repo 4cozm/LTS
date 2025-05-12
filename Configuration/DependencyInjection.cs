@@ -1,5 +1,6 @@
 using LTS.Data.Repository;
 using LTS.Services;
+using LTS.MiddleWare;
 
 namespace LTS.Configuration;
 
@@ -11,6 +12,7 @@ public static class DependencyInjection
         services.AddScoped<EmployeeRepository>();
         services.AddScoped<LoginService>();
         services.AddSingleton<SessionStore>();
+        services.AddScoped<SessionValidationMiddleware>();
         // TODO: Add more core services (예: 회원가입, 근무조회 등)
 
         return services;

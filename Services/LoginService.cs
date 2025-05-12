@@ -29,4 +29,13 @@ public class LoginService
     {
         return BCrypt.Net.BCrypt.Verify(input, inDbPassword);
     }
+
+    public static bool ValidateToken(string token)
+    {
+        var session = SessionStore.GetSession(token);
+        if (session == null)
+            return false;
+        else
+            return true;
+    }
 }
