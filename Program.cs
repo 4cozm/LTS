@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using LTS.Configuration;
 using LTS.Services;
+using LTS.MiddleWare;
 
 var builder = WebApplication.CreateBuilder(args);
 EnvConfig.Configure(builder);
@@ -19,6 +20,7 @@ var app = builder.Build();
 app.UseStaticFiles();
 app.UseRouting();
 app.MapRazorPages();
+app.UseMiddleware<SessionValidationMiddleware>();
 
 Console.WriteLine("등록된 매장🏢");
 Console.WriteLine(string.Join(", ", StoreService.GetAllStores()));
