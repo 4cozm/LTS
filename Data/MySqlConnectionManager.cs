@@ -11,7 +11,7 @@ public static class DbManager
 
     static DbManager()
     {
-        _connectionString = $"Server={EnvConfig.MySqlIp};Uid={EnvConfig.MySqlUserName};Pwd={EnvConfig.MySqlPassword};Pooling=true;";
+        _connectionString = $"Server={EnvConfig.MySqlIp};Uid={EnvConfig.MySqlUserName};Pwd={EnvConfig.MySqlPassword};Database=lts_core;Pooling=true;";
     }
 
     public static MySqlConnection? GetConnection()

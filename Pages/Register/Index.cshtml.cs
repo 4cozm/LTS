@@ -23,10 +23,12 @@ namespace LTS.Pages.Register
         public DateTime? EffectiveDate { get; set; }
 
         [BindProperty]
+        [Required(ErrorMessage = "매장을 선택해주세요.")]
         [ValidName]
         public string? StoreName { get; set; }
 
         [BindProperty]
+        [Required(ErrorMessage = "직책을 선택해주세요.")]
         [ValidRoleName]
         public string? RoleName { get; set; }
 
@@ -81,7 +83,7 @@ namespace LTS.Pages.Register
                 // 4. 문자 발송 (예정)
                 // 문자 발송 관련 코드 추가 예정
 
-                return RedirectToPage("Success"); // 성공 페이지로 리디렉션(예정)
+                return RedirectToPage("/"); // 성공 페이지로 리디렉션(예정)
             }
             catch (Exception)
             {

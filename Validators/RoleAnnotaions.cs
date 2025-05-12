@@ -7,6 +7,7 @@ namespace LTS.Validators
     {
         protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
         {
+            Console.WriteLine("사용자가 선택한 값:"+value);
             if (value is not string roleName || string.IsNullOrWhiteSpace(roleName))
             {
                 return new ValidationResult("직책을 입력해야 합니다.");
