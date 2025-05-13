@@ -14,7 +14,20 @@ public class EmployeeRepository
         using var conn = DbManager.GetConnection();
         if (conn == null) return null;
 
-        string query = "SELECT * FROM employees WHERE initials = @initials";
+        string query = @"
+        SELECT id AS Id,
+            initials AS Initials,
+            name AS Name,
+            password AS Password,
+            is_password_changed AS IsPasswordChanged,
+            store AS Store,
+            role_name AS RoleName,
+            work_start_date AS WorkStartDate,
+            created_at AS CreatedAt,
+            created_by_member AS CreatedByMember
+        FROM employees
+        WHERE initials = @initials";
+
         return conn.QueryFirstOrDefault<Employee>(query, new { initials });
     }
 

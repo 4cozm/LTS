@@ -2,10 +2,12 @@ using LTS.Data.Repository;
 using LTS.Models;
 
 
+
 namespace LTS.Services;
 public class LoginService
 {
     private readonly EmployeeRepository _repo;
+
 
 
     public LoginService(EmployeeRepository repo)
@@ -30,12 +32,9 @@ public class LoginService
         return BCrypt.Net.BCrypt.Verify(input, inDbPassword);
     }
 
-    public static bool ValidateToken(string token)
+    public static (bool isValid, Employee? employee) TryGetValidEmployeeFromToken(string token)
     {
-        var session = SessionStore.GetSession(token);
-        if (session == null)
-            return false;
-        else
-            return true;
+        var employee = SessionStore.GetSession(token);
+        return (employee != null, employee);
     }
 }

@@ -1,6 +1,5 @@
 using LTS.Data.Repository;
 using LTS.Services;
-using LTS.MiddleWare;
 
 namespace LTS.Configuration;
 

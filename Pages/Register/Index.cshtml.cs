@@ -4,6 +4,7 @@ using LTS.Validators;
 using LTS.Data.Repository;
 using LTS.Models;
 using LTS.Base;
+using LTS.Services;
 
 namespace LTS.Pages.Register
 {
@@ -15,11 +16,10 @@ namespace LTS.Pages.Register
         [RegularExpression(@"^[가-힣]+$", ErrorMessage = "이름은 한글만 포함해야 합니다.")]
         public string? Name { get; set; }
 
-
         [BindProperty]
         [Required(ErrorMessage = "이니셜을 입력해주세요.")]
         [StringLength(5, MinimumLength = 2, ErrorMessage = "이니셜은 2~5글자여야 합니다.")]
-        [RegularExpression(@"^[A-Z][1-9]+$", ErrorMessage = "이니셜은 영어 대문자,숫자만 포함해야 합니다.")]
+        [RegularExpression(@"^[A-Z0-9]{2,5}$", ErrorMessage = "이니셜은 영어 대문자,숫자만 포함해야 합니다.")]
         public string? Initial { get; set; }
 
         [BindProperty]
@@ -62,46 +62,61 @@ namespace LTS.Pages.Register
                 return Page();
             }
 
-            try
+            var token = Request.Cookies["LTS-Session"];
+            if (string.IsNullOrEmpty(token))
             {
-                // 1. 토큰을 검사해서 이름, 직책 가져옴
-                // 2. 권한 있는지 조건문으로 확인
-                // 3. DB에 저장
-                var hashedPassword = BCrypt.Net.BCrypt.HashPassword(PhoneNumber); // 비밀번호 해싱
-                var employee = new Employee
-                {
-                    Name = Name,
-                    Initials = Initial,
-                    Password = hashedPassword,
-                    Store = StoreName,
-                    RoleName = RoleName,
-                    WorkStartDate = EffectiveDate ?? DateTime.Today, // 값을 선택하지 않으면 오늘 날짜로 설정
-                    CreatedAt = DateTime.UtcNow,
-                    CreatedByMember = "SystemAdmin"
-                };
-
-                var createEmployee = _employeeRepository.CreateEmployee(employee);
-
-                if (createEmployee == null)
-                {
-                    // DB에 저장 실패 시
-                    ModelState.AddModelError(string.Empty, "알 수 없는 이유로 직원 등록에 실패했습니다.");
-                    return Page();
-                }
-
-                Console.WriteLine($"직원 등록 완료 : {employee.Initials}, {employee.Store}, {employee.RoleName},{employee.CreatedByMember}"); //추후 로깅
-
-                // 4. 문자 발송 (예정)
-                // 문자 발송 관련 코드 추가 예정
-
-                return RedirectToPage("/Result/Index"); // 성공 페이지로 리디렉션
-            }
-            catch (InvalidOperationException ex) //InvalidOperationException으로 선언된 모든 에러를 잡게 되어 있음.
-            {
-                ModelState.AddModelError(string.Empty, ex.Message);
+                Console.WriteLine("[ALERT] 미들웨어 검증 무시하고 접근중");
+                ModelState.AddModelError(string.Empty, "잘못된 방법으로 접근하셨습니다.");
                 return Page();
             }
-        }
 
+            var (isValid, employee) = LoginService.TryGetValidEmployeeFromToken(token);
+            if (!isValid || employee == null)
+            {
+                NoticeService.RedirectWithNotice(HttpContext, "세션이 만료되었거나 유효하지 않습니다", "/Index");
+                return new EmptyResult();
+            }
+
+            Console.WriteLine($"[LOG] {RoleName} 등록 요청중 : {employee.Name}");
+            if (employee.RoleName != "Manager" && employee.RoleName != "Owner")
+            {
+                Console.WriteLine($"[ALERT] 스태프 등록 권한 없음 : {employee.Name}");
+                ModelState.AddModelError(string.Empty, "권한이 부족합니다.");
+                return Page();
+            }
+
+            if (RoleName == "Manager" && employee.RoleName != "Owner")
+            {
+                Console.WriteLine($"[ALERT] 매니저 등록 권한 없음 : {employee.Name}");
+                ModelState.AddModelError(string.Empty, "권한이 부족합니다.");
+                return Page();
+            }
+
+            var hashedPassword = BCrypt.Net.BCrypt.HashPassword(PhoneNumber);
+
+            var newEmployee = new Employee
+            {
+                Name = Name,
+                Initials = Initial,
+                Password = hashedPassword,
+                Store = StoreName,
+                RoleName = RoleName,
+                WorkStartDate = EffectiveDate ?? DateTime.Today,
+                CreatedAt = DateTime.UtcNow,
+                CreatedByMember = employee.Name
+            };
+
+            var created = _employeeRepository.CreateEmployee(newEmployee);
+
+            if (created == null)
+            {
+                ModelState.AddModelError(string.Empty, "알 수 없는 이유로 직원 등록에 실패했습니다.");
+                return Page();
+            }
+
+            Console.WriteLine($"[LOG] 직원 등록 완료 : {newEmployee.Initials}, {newEmployee.Store}, {newEmployee.RoleName}, {newEmployee.CreatedByMember}");
+
+            return RedirectToPage("/Result/Index");
+        }
     }
 }

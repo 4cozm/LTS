@@ -38,7 +38,8 @@ namespace LTS.Pages
                     Expires = session.ExpireAt,
                     SameSite = SameSiteMode.Strict
                 });
-                return RedirectToPage("/Home");
+                HttpContext.Response.Redirect("/Register");
+                return new EmptyResult();
             }
             catch (UnauthorizedAccessException ex)
             {
