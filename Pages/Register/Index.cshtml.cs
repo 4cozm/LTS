@@ -11,15 +11,25 @@ namespace LTS.Pages.Register
     public class IndexModel : BasePageModel
     {
         [BindProperty]
+        [Required(ErrorMessage = "이름을 입력해주세요.")]
+        [StringLength(5, MinimumLength = 2, ErrorMessage = "이름은 2~5글자여야 합니다.")]
+        [RegularExpression(@"^[가-힣]+$", ErrorMessage = "이름은 한글만 포함해야 합니다.")]
+        public string? Name { get; set; }
+
+
+        [BindProperty]
+        [Required(ErrorMessage = "이니셜을 입력해주세요.")]
         [StringLength(5, MinimumLength = 2, ErrorMessage = "이니셜은 2~5글자여야 합니다.")]
         [RegularExpression(@"^[A-Z]+$", ErrorMessage = "이니셜은 영어 대문자만 포함해야 합니다.")]
         public string? Initial { get; set; }
 
         [BindProperty]
+        [Required(ErrorMessage = "전화번호를 입력해주세요.")]
         [RegularExpression(@"^\d{11}$", ErrorMessage = "전화번호는 숫자 11자리만 가능합니다.")]
         public string? PhoneNumber { get; set; }
 
         [BindProperty]
+        [Required(ErrorMessage = "날짜가 입력되지 않았습니다")]
         [DataType(DataType.Date, ErrorMessage = "유효한 날짜를 입력하세요.")]
         public DateTime? EffectiveDate { get; set; }
 

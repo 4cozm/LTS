@@ -5,6 +5,12 @@
 }
 <form id="registerForm" method="post">
   <div class="mb-3">
+    <label for="inputName" class="form-label">이름</label>
+    <input asp-for="Name" type="text" class="form-control" id="inputName">
+    <div class="form-text">2글자 최대 5글자 까지 가능합니다.</div>
+    <span asp-validation-for="Name" class="text-danger"></span>
+  </div>
+  <div class="mb-3">
     <label for="inputInitial" class="form-label">이름 이니셜</label>
     <input asp-for="Initial" type="text" class="form-control" id="inputInitial">
     <div class="form-text">이니셜은 영어 대문자만 가능하며, 최소 2글자 최대 5글자 까지 가능합니다.</div>
