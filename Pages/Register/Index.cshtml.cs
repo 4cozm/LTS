@@ -4,10 +4,11 @@ using System.ComponentModel.DataAnnotations;
 using LTS.Validators;
 using LTS.Data.Repository;
 using LTS.Models;
+using LTS.Base;
 
 namespace LTS.Pages.Register
 {
-    public class IndexModel : PageModel
+    public class IndexModel : BasePageModel
     {
         [BindProperty]
         [StringLength(5, MinimumLength = 2, ErrorMessage = "이니셜은 2~5글자여야 합니다.")]

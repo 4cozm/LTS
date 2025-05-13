@@ -3,10 +3,10 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using LTS.Services;
-
+using LTS.Base;
 namespace LTS.Pages
 {
-    public class IndexModel : PageModel
+    public class IndexModel : BasePageModel
     {
         private readonly LoginService _loginService;
         public IndexModel(LoginService loginService)

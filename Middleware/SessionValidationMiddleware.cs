@@ -23,12 +23,11 @@ public class SessionValidationMiddleware
             var token = context.Request.Cookies["LTS-Session"];
             if (string.IsNullOrEmpty(token) || !LoginService.ValidateToken(token))
             {
-                context.Response.Redirect("/Index");
-                return; // 미들웨어 체인 중단
+                NoticeService.RedirectWithNotice(context,"로그인이 필요합니다","/Index");
+                return;
             }
         }
 
-        // 다음 미들웨어로 이동
         await _next(context);
     }
 }
