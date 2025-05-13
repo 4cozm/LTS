@@ -3,6 +3,8 @@
 @{
     ViewData["Title"] = "Register";
 }
+
+
 <form id="registerForm" method="post">
   <div class="mb-3">
     <label for="inputName" class="form-label">이름</label>
@@ -48,6 +50,7 @@
     <input asp-for="RoleName" type="hidden" name="RoleName" id="hiddenRoleInput">
   <button type="submit" class="btn btn-primary">저장</button>
 </form>
+<div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
 <script>
   function changeStoreButtonText(storeName,storeNameToEnglish) {

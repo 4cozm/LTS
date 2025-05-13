@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.ComponentModel.DataAnnotations;
 using LTS.Validators;
 using LTS.Data.Repository;
@@ -20,7 +19,7 @@ namespace LTS.Pages.Register
         [BindProperty]
         [Required(ErrorMessage = "이니셜을 입력해주세요.")]
         [StringLength(5, MinimumLength = 2, ErrorMessage = "이니셜은 2~5글자여야 합니다.")]
-        [RegularExpression(@"^[A-Z]+$", ErrorMessage = "이니셜은 영어 대문자만 포함해야 합니다.")]
+        [RegularExpression(@"^[A-Z][1-9]+$", ErrorMessage = "이니셜은 영어 대문자,숫자만 포함해야 합니다.")]
         public string? Initial { get; set; }
 
         [BindProperty]
@@ -71,6 +70,7 @@ namespace LTS.Pages.Register
                 var hashedPassword = BCrypt.Net.BCrypt.HashPassword(PhoneNumber); // 비밀번호 해싱
                 var employee = new Employee
                 {
+                    Name = Name,
                     Initials = Initial,
                     Password = hashedPassword,
                     Store = StoreName,
@@ -85,20 +85,20 @@ namespace LTS.Pages.Register
                 if (createEmployee == null)
                 {
                     // DB에 저장 실패 시
-                    ModelState.AddModelError(string.Empty, "직원 등록에 실패했습니다. 해당 에러 내용은 관리자에게 자동으로 전달됩니다.");
+                    ModelState.AddModelError(string.Empty, "알 수 없는 이유로 직원 등록에 실패했습니다.");
                     return Page();
                 }
 
-                Console.WriteLine($"직원 등록 완료 : {employee.Initials}, {employee.Store}, {employee.RoleName}"); //추후 로깅
+                Console.WriteLine($"직원 등록 완료 : {employee.Initials}, {employee.Store}, {employee.RoleName},{employee.CreatedByMember}"); //추후 로깅
 
                 // 4. 문자 발송 (예정)
                 // 문자 발송 관련 코드 추가 예정
 
                 return RedirectToPage("/Result/Index"); // 성공 페이지로 리디렉션
             }
-            catch (Exception)
+            catch (InvalidOperationException ex) //InvalidOperationException으로 선언된 모든 에러를 잡게 되어 있음.
             {
-                ModelState.AddModelError(string.Empty, "직원 등록 중 오류가 발생했습니다. 해당 에러 내용은 관리자에게 자동으로 전달됩니다.");
+                ModelState.AddModelError(string.Empty, ex.Message);
                 return Page();
             }
         }
