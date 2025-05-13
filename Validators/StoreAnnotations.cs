@@ -6,7 +6,6 @@ namespace LTS.Validators
     {
         protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
         {
-            Console.WriteLine("사용자가 선택한 값:"+value);
             if (value is not string storeName || string.IsNullOrWhiteSpace(storeName) || storeName == "매장 선택")
             {
                 return new ValidationResult("매장을 선택해 주세요");

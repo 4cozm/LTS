@@ -83,7 +83,7 @@ namespace LTS.Pages.Register
                 // 4. 문자 발송 (예정)
                 // 문자 발송 관련 코드 추가 예정
 
-                return RedirectToPage("/"); // 성공 페이지로 리디렉션(예정)
+                return RedirectToPage("/Result/Index"); // 성공 페이지로 리디렉션
             }
             catch (Exception)
             {
