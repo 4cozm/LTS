@@ -2,31 +2,54 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-
+using LTS.Services;
+using LTS.Base;
 namespace LTS.Pages
 {
-    public class IndexModel : PageModel
+    public class IndexModel : BasePageModel
     {
+        private readonly LoginService _loginService;
+        public IndexModel(LoginService loginService)
+        {
+            _loginService = loginService;
+        }
 
         [BindProperty]
-        [Required(ErrorMessage ="아이디를 입력해 주세요")]
-        public string? Username { get; set; }
+        [Required(ErrorMessage = "아이디를 입력해 주세요")]
+        public string Username { get; set; } = string.Empty;
 
         [BindProperty]
-        [Required(ErrorMessage ="비밀번호를 입력해 주세요")]
-        public string? Password {get;set;}
+        [Required(ErrorMessage = "비밀번호를 입력해 주세요")]
+        public string Password { get; set; } = string.Empty;
 
-        public IActionResult OnPost(){
+        public IActionResult OnPost()
+        {
             if (!ModelState.IsValid)
             {
                 return Page();
             }
-            if(Username == "admin" && Password == "password")
+            try
             {
-                return RedirectToPage("/Main");
+                var session = _loginService.TryLogin(Username, Password);
+                Response.Cookies.Append("LTS-Session", session.Token, new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true,
+                    Expires = session.ExpireAt,
+                    SameSite = SameSiteMode.Strict
+                });
+                HttpContext.Response.Redirect("/Register");
+                return new EmptyResult();
             }
-            ModelState.AddModelError("Password", "비밀번호가 올바르지 않습니다.");
-            ModelState.AddModelError("Username", "아이디가 올바르지 않습니다.");
+            catch (UnauthorizedAccessException ex)
+            {
+                ModelState.AddModelError(string.Empty, ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                ModelState.AddModelError(string.Empty, ex.Message);
+            }
+
             return Page();
         }
 

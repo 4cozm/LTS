@@ -3,11 +3,19 @@
 @{
     ViewData["Title"] = "Register";
 }
+
+
 <form id="registerForm" method="post">
+  <div class="mb-3">
+    <label for="inputName" class="form-label">이름</label>
+    <input asp-for="Name" type="text" class="form-control" id="inputName">
+    <div class="form-text">2글자 최대 5글자 까지 가능합니다.</div>
+    <span asp-validation-for="Name" class="text-danger"></span>
+  </div>
   <div class="mb-3">
     <label for="inputInitial" class="form-label">이름 이니셜</label>
     <input asp-for="Initial" type="text" class="form-control" id="inputInitial">
-    <div class="form-text">이니셜은 최소 2글자 최대 5글자 까지 가능합니다.</div>
+    <div class="form-text">이니셜은 영어 대문자만 가능하며, 최소 2글자 최대 5글자 까지 가능합니다.</div>
     <span asp-validation-for="Initial" class="text-danger"></span>
   </div>
   <div class="mb-3">
@@ -33,7 +41,7 @@
     <div class="dropdown">
         <button id="roleButton" class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">권한 선택</button>
         <ul class="dropdown-menu">
-            <li><a class="dropdown-item disabled" onclick="changeRoleButtonText('매니저','Manager')">매니저</a></li>
+            <li><a class="dropdown-item " onclick="changeRoleButtonText('매니저','Manager')">매니저</a></li>
             <li><a class="dropdown-item " onclick="changeRoleButtonText('스태프','Staff')">스태프</a></li>
         </ul>
         <span asp-validation-for="RoleName" class="text-danger"></span>
@@ -42,6 +50,7 @@
     <input asp-for="RoleName" type="hidden" name="RoleName" id="hiddenRoleInput">
   <button type="submit" class="btn btn-primary">저장</button>
 </form>
+<div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
 <script>
   function changeStoreButtonText(storeName,storeNameToEnglish) {

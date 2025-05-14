@@ -8,8 +8,6 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: rootpass
       MYSQL_DATABASE: lts_core
-      MYSQL_USER: testuser
-      MYSQL_PASSWORD: testpass
     ports:
       - "3306:3306"
     volumes:
