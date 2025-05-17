@@ -8,54 +8,58 @@
   <div class="card shadow-sm mx-auto p-4" style="max-width: 600px;">
     <h2 class="mb-4 text-center">비밀번호 변경</h2>
 
-    <form method="post">
-      @* CSRF 보호 토큰 *@
-      <partial name="_ValidationScriptsPartial" />
-      <div asp-validation-summary="All" class="text-danger"></div>
+    @* 인증 실패 메시지 등 *@
+    <div asp-validation-summary="All" class="text-danger"></div>
 
-      <!-- 휴대폰 번호 (읽기 전용) -->
-      <div class="mb-3">
-        <label asp-for="PhoneNumber" class="form-label"></label>
-        <div class="input-group">
-          <input asp-for="PhoneNumber" class="form-control" disabled />
-          <button class="btn btn-primary" type="button">인증번호 발송</button>
-        </div>
-      </div>
+    @if (!Model.IsVerified)
+    {
+        <form method="post" asp-page-handler="Verify">
+          <!-- 전화번호 (출력용) -->
+          <div class="mb-3">
+            <label class="form-label">휴대폰 번호</label>
+            <div class="input-group">
+              <input class="form-control" value="@Model.PhoneNumber" disabled />
+              <button class="btn btn-primary" type="button">인증번호 발송</button>
+            </div>
+          </div>
 
-      <!-- 인증번호 입력 -->
-      <div class="mb-3">
-        <label asp-for="VerificationCode" class="form-label"></label>
-        <div class="input-group">
-          <input asp-for="VerificationCode" class="form-control" />
-          <button class="btn btn-outline-secondary" type="button">확인</button>
-        </div>
-      </div>
+          <!-- 인증번호 입력 -->
+          <div class="mb-4">
+            <label asp-for="VerificationCode" class="form-label"></label>
+            <input asp-for="VerificationCode" class="form-control" />
+            <button class="btn btn-outline-secondary mt-2" type="submit">인증 확인</button>
+          </div>
+        </form>
+    }
+    else
+    {
+        <form method="post" asp-page-handler="ChangePassword">
+          <!-- 현재 비밀번호 -->
+          <div class="mb-3">
+            <label asp-for="CurrentPassword" class="form-label"></label>
+            <input asp-for="CurrentPassword" class="form-control" type="password" />
+            <span asp-validation-for="CurrentPassword" class="text-danger"></span>
+          </div>
 
-      <!-- 현재 비밀번호 -->
-      <div class="mb-3">
-        <label asp-for="CurrentPassword" class="form-label"></label>
-        <input asp-for="CurrentPassword" class="form-control" type="password" />
-        <span asp-validation-for="CurrentPassword" class="text-danger"></span>
-      </div>
+          <!-- 새 비밀번호 -->
+          <div class="mb-3">
+            <label asp-for="NewPassword" class="form-label"></label>
+            <input asp-for="NewPassword" class="form-control" type="password" />
+            <span asp-validation-for="NewPassword" class="text-danger"></span>
+          </div>
 
-      <!-- 변경할 비밀번호 -->
-      <div class="mb-3">
-        <label asp-for="NewPassword" class="form-label"></label>
-        <input asp-for="NewPassword" class="form-control" type="password" />
-        <span asp-validation-for="NewPassword" class="text-danger"></span>
-      </div>
+          <!-- 확인 -->
+          <div class="mb-4">
+            <label asp-for="ConfirmPassword" class="form-label"></label>
+            <input asp-for="ConfirmPassword" class="form-control" type="password" />
+            <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+          </div>
 
-      <!-- 비밀번호 확인 -->
-      <div class="mb-4">
-        <label asp-for="ConfirmPassword" class="form-label"></label>
-        <input asp-for="ConfirmPassword" class="form-control" type="password" />
-        <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
-      </div>
-
-      <!-- 저장 버튼 -->
-      <div class="d-grid">
-        <button type="submit" class="btn btn-success">저장</button>
-      </div>
-    </form>
+          <!-- 저장 -->
+          <div class="d-grid">
+            <button type="submit" class="btn btn-success">저장</button>
+          </div>
+        </form>
+    }
   </div>
 </div>

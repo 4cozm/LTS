@@ -34,6 +34,7 @@ public class SessionValidationMiddleware
                 NoticeService.RedirectWithNotice(context, "세션이 만료되었거나 유효하지 않습니다", "/Index");
                 return;
             }
+            context.Items["Employee"] = employee;
         }
 
         await _next(context);
