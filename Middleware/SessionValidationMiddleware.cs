@@ -16,7 +16,7 @@ public class SessionValidationMiddleware
         var path = context.Request.Path;
 
         // 인증 제외 경로 지정
-        var excludedPaths = new[] { "/", "/Index","/Home" };
+        var excludedPaths = new[] { "/", "/Index","/Home","/ChangePassword" };
 
         if (!excludedPaths.Any(p => string.Equals(p, path, StringComparison.OrdinalIgnoreCase)))
         {
