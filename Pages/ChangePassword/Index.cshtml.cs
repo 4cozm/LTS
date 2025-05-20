@@ -1,6 +1,7 @@
 using LTS.Base;
 using System.ComponentModel.DataAnnotations;
-using LTS.Data.Repository
+using LTS.Data.Repository;
+using Microsoft.AspNetCore.Mvc;
 
 namespace LTS.Pages.ChangePassword
 {
