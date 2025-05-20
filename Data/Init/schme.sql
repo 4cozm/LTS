@@ -103,6 +103,7 @@ CREATE TABLE employees (
     id INT AUTO_INCREMENT PRIMARY KEY,            -- 고유 ID
     initials VARCHAR(10) NOT NULL UNIQUE,         -- 이니셜 (예: AHG)
     name VARCHAR(255) NOT NULL,                -- 이름
+    phone_number VARCHAR(20) NOT NULL,            -- 전화번호
     password VARCHAR(255) NOT NULL,        -- 비밀번호
     is_password_changed BOOLEAN DEFAULT FALSE, -- 초기 비밀번호 계속 사용하고 있는지 여부
     store VARCHAR(50) NOT NULL,            -- 근무 매장명 또는 매장 ID
