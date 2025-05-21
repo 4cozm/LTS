@@ -2,13 +2,14 @@ using LTS.Base;
 using System.ComponentModel.DataAnnotations;
 using LTS.Models;
 using Microsoft.AspNetCore.Mvc;
+using LTS.Services;
 
 namespace LTS.Pages.ChangePassword
 {
     public class IndexModel : BasePageModel
     {
-        [BindProperty]
-        public string? PhoneNumber { get; private set; } 
+        [BindProperty(SupportsGet = true)]
+        public string? PhoneNumber { get; set; }
 
         [BindProperty]
         [Required(ErrorMessage = "인증 번호를 입력해주세요")]
@@ -31,42 +32,71 @@ namespace LTS.Pages.ChangePassword
 
         public Employee? CurrentEmployee { get; private set; }
 
+        public bool IsCodeSent { get; private set; } = false;
         public bool IsVerified { get; private set; } = false;
 
         public void OnGet()
         {
             CurrentEmployee = HttpContext.Items["Employee"] as Employee;
+            if (CurrentEmployee == null)
+            {
+                ModelState.AddModelError(string.Empty, "로그인 된 직원 정보를 찾을 수 없습니다.");
+                return;
+            }
             PhoneNumber = CurrentEmployee.PhoneNumber;
+            IsCodeSent = HttpContext.Session.GetString("VerificationCodeSent") == "true";
+            IsVerified = HttpContext.Session.GetString("IsVerified") == "true";
         }
 
-    public IActionResult OnPostVerify()
-    {
-        var employee = HttpContext.Items["Employee"] as Employee;
-        PhoneNumber = employee?.PhoneNumber;
 
-        if (VerificationCode == "123456") // 예시: 인증번호 매칭 로직
+        public IActionResult OnPostVerify()
         {
-            IsVerified = true;
+            if (VerificationCode == "123456") // 예시: 인증번호 매칭 로직
+            {
+                HttpContext.Session.SetString("IsVerified", "true");
+            }
+            else
+            {
+                ModelState.AddModelError(string.Empty, "인증번호가 일치하지 않습니다.");
+            }
+
+            return Page();
         }
-        else
+
+        public IActionResult OnPostChangePassword()
         {
-            ModelState.AddModelError(string.Empty, "인증번호가 일치하지 않습니다.");
+            IsVerified = HttpContext.Session.GetString("IsVerified") == "true";
+            if (!IsVerified)
+            {
+                return NoticeService.RedirectWithNotice(HttpContext, "인증되지 않은 요청입니다.", "/ChangePassword");
+            }
+            if (!ModelState.IsValid)
+            {
+                return Page();
+            }
+            // 비밀번호 변경 로직 수행
+
+            HttpContext.Session.Remove("IsVerified");
+            HttpContext.Session.Remove("VerificationCode");
+            HttpContext.Session.Remove("VerificationCodeExpires");
+            HttpContext.Session.Remove("VerificationCodeSent");
+
+            return NoticeService.RedirectWithNotice(HttpContext, "비밀번호가 성공적으로 변경되었습니다.", "/Home");
         }
 
-        return Page();
-    }
+        public IActionResult OnPostSendCode()
+        {
+            // 인증번호 생성
 
-    public IActionResult OnPostChangePassword()
-    {
-        var employee = HttpContext.Items["Employee"] as Employee;
-        PhoneNumber = employee?.PhoneNumber;
-        IsVerified = true; // 이미 인증됐다고 간주
+            // 세션에 저장
+            HttpContext.Session.SetString("VerificationCode", code);
+            HttpContext.Session.SetString("VerificationCodeExpires", DateTime.UtcNow.AddMinutes(3).ToString());
+            HttpContext.Session.SetString("VerificationCodeSent", "true");
 
-        if (!ModelState.IsValid) return Page();
+            // 문자 발송 (서버에서 외부 API 호출)
 
-        // 비밀번호 변경 로직 수행
 
-        return RedirectToPage("/Success");
-    }
+            return NoticeService.RedirectWithNotice(HttpContext, "인증번호를 발송했습니다. 인증번호는 3분간 유효합니다.", "/ChangePassword");
+        }
     }
 }
