@@ -1,6 +1,7 @@
 namespace LTS.Models;
 public class Employee
 {
+    public int Id { get; set; }                         //DB 고유키 (읽기용)
     public string? Name { get; set; }                  // 이름 (예: 안홍걸)
     public string? Initials { get; set; }               // 이니셜 (예: AHG)
     public string? PhoneNumber { get; set; }            // 전화번호 (예: 010-1234-5678)
