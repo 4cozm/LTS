@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 
@@ -7,7 +8,7 @@ public static class NoticeService
 {
     private const string NoticeCookieKey = "LTS-Notice";
 
-    public static void RedirectWithNotice(HttpContext context, string message, string redirectUrl)
+    public static IActionResult RedirectWithNotice(HttpContext context, string message, string redirectUrl)
     {
         var encoded = Uri.EscapeDataString(message);
         context.Response.Cookies.Append(NoticeCookieKey, encoded, new CookieOptions
@@ -19,7 +20,7 @@ public static class NoticeService
             SameSite = SameSiteMode.Lax
         });
 
-        context.Response.Redirect(redirectUrl);
+        return new RedirectResult(redirectUrl);
     }
 
     public static void TransferToTempData(HttpContext context, ITempDataDictionary tempData)
