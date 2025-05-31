@@ -7,9 +7,12 @@ using Azure.Identity;
 using DotNetEnv;
 using LTS.Data;
 namespace LTS.Configuration;
+
 public static class EnvConfig
 {
     public static bool IsDevelopment { get; private set; }
+
+    public static string WatchTowerIp { get; private set; } = "";
 
     public static string MySqlUserName { get; private set; } = "";
     public static string MySqlIp { get; private set; } = "";
@@ -48,6 +51,7 @@ public static class EnvConfig
             MySqlPassword = builder.Configuration["MYSQL-DEV-PASSWORD"] ?? throw new InvalidOperationException("MYSQL-DEV-PASSWORD is missing");
             FirebaseSecretJson = builder.Configuration["FIREBASE-DB-DEV"] ?? throw new InvalidOperationException("FIREBASE-DB-DEV is missing");
             GooglePrePaidSheetId = builder.Configuration["GOOGLE-SHEET-PREPAID-DEV"] ?? throw new InvalidOperationException("GOOGLE-SHEET-PREPAID-DEV is missing");
+            WatchTowerIp = builder.Configuration["WATCH-TOWER-IP-DEV"] ?? throw new InvalidOperationException("WATCH-TOWER-IP-DEV is missing");
         }
         else
         {
@@ -58,6 +62,7 @@ public static class EnvConfig
             MySqlPassword = builder.Configuration["MYSQL-PASSWORD"] ?? throw new InvalidOperationException("MYSQL-PASSWORD is missing");
             FirebaseSecretJson = builder.Configuration["FIREBASE-DB"] ?? throw new InvalidOperationException("FIREBASE-DB is missing");
             GooglePrePaidSheetId = builder.Configuration["GOOGLE-SHEET-PREPAID"] ?? throw new InvalidOperationException("GOOGLE-SHEET-PREPAID-DEV is missing");
+            WatchTowerIp = builder.Configuration["WATCH-TOWER-IP"] ?? throw new InvalidOperationException("WATCH-TOWER-IP is missing");
         }
         //공통 사용 환경변수 
         FirebaseCredential = GoogleCredential.FromStream(new MemoryStream(Encoding.UTF8.GetBytes(FirebaseSecretJson))).CreateScoped(FirebaseScopes);
