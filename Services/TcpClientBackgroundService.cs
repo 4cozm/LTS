@@ -2,6 +2,10 @@ using System.Net.Sockets;
 using LTS.Configuration;
 namespace LTS.Services;
 
+using System.Security.Cryptography;
+using System.Text;
+
+
 using CommsProto;
 
 public class TcpClientBackgroundService : BackgroundService
@@ -18,9 +22,12 @@ public class TcpClientBackgroundService : BackgroundService
             {
                 _client = new TcpClient();
                 await _client.ConnectAsync(EnvConfig.WatchTowerIp, 4000);
+                _stream = _client.GetStream();
+
                 Console.WriteLine("Watch Tower 서버에 연결 성공");
 
-                _stream = _client.GetStream();
+                await SendAuthMessageAsync(_stream);// 인증 발송
+
                 await ReceiveLoopAsync(_stream, stoppingToken); // 수신 루프
 
                 Console.WriteLine("연결이 끊어졌습니다. 재연결 시도 중...");
@@ -127,10 +134,48 @@ public class TcpClientBackgroundService : BackgroundService
             case Envelope.PayloadOneofCase.Ntfy:
                 ProtoHandler.HandleNtfyNotification(envelope.Ntfy);
                 break;
+            case Envelope.PayloadOneofCase.Message:
+                ProtoHandler.HandleCommonMessage(envelope.Message);
+                break;
             case Envelope.PayloadOneofCase.None:
             default:
                 Console.WriteLine("알 수 없는 타입의 메시지가 들어왔습니다 또는 payload가 비어 있습니다.");
                 break;
         }
     }
+
+    private static string AuthKeyGen(string timeStamp)
+    {
+        string sharedSecret = EnvConfig.WatchTowerAuthSecret;
+
+        using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(sharedSecret));
+        byte[] hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(timeStamp));
+
+        return BitConverter.ToString(hash).Replace("-", "").ToLower();
+    }
+
+    private static async Task SendAuthMessageAsync(NetworkStream _stream)
+    {
+        if (_stream == null || !_stream.CanWrite)
+        {
+            Console.WriteLine("스트림이 유효하지 않습니다.");
+            return;
+        }
+        var timeStamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString();
+
+        var authEnvelope = new Envelope
+        {
+            Auth = new TcpAuth
+            {
+                Key = AuthKeyGen(timeStamp),
+                TimeStamp = long.Parse(timeStamp),
+                ContainerNumber = "1"
+            }
+        };
+
+        var bytesToSend = ProtoMessageBuilder.BuildEnvelopeMessage(authEnvelope);
+        await _stream.WriteAsync(bytesToSend.AsMemory());
+        await _stream.FlushAsync();
+    }
+
 }

@@ -1,4 +1,5 @@
 namespace LTS.Services;
+
 using CommsProto;
 
 // Envelope 메시지에 정의된 각 메시지 타입을 처리할 핸들러들
@@ -32,5 +33,10 @@ public static class ProtoHandler
     {
         // ntfy 알림 메시지 처리 로직
         Console.WriteLine($"[HandleNtfy] Topic: {ntfyMsg.Topic}, Title: {ntfyMsg.Title}, Message: {ntfyMsg.Message}");
+    }
+
+    public static void HandleCommonMessage(CommonMessage message)
+    {
+        Console.WriteLine($"Watch Tower 서버 : {message.Message}");
     }
 }

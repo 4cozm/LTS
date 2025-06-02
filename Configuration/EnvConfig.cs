@@ -30,6 +30,8 @@ public static class EnvConfig
     private static string FirebaseSecretJson = string.Empty; //JSON파싱 이후에 쓸수있는 값이라 private 선언
     public static GoogleCredential? FirebaseCredential = null;//실제 firebase api를 쓸때 사용하는 키
     private static readonly string[] FirebaseScopes = ["https://www.googleapis.com/auth/firebase.database", "https://www.googleapis.com/auth/userinfo.email"];
+
+    public static string WatchTowerAuthSecret { get; private set; } = "";
     public static void Configure(WebApplicationBuilder builder)
     {
         Env.Load();
@@ -72,6 +74,8 @@ public static class EnvConfig
         GoogleApiId = builder.Configuration["GOOGLE-API-CLIENT-ID"] ?? throw new InvalidOperationException("GOOGLE-API-CLIENT-ID is missing");
 
         GoogleApiRefreshToken = builder.Configuration["GOOGLE-API-REFRESH-TOKEN"];
+
+        WatchTowerAuthSecret = builder.Configuration["WATCH-TOWER-AUTH-SECRET"] ?? throw new InvalidOperationException("WATCH-TOWER-AUTH-SECRET is missing");
         if (string.IsNullOrEmpty(GoogleApiRefreshToken))
         {
             Console.WriteLine("🚨 Refresh Token이 없음. 구글 인증을 통해 발급 시도 중...");
