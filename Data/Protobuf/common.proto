@@ -10,6 +10,7 @@ message Envelope {
     ServerStatus status = 3;
     SendKakaoAlertNotification kakaoAlert = 4;
     NtfyNotification ntfy = 5;
+    TcpAuth auth = 6;
   }
 }
 
@@ -39,4 +40,10 @@ message NtfyNotification {
   string topic = 1;
   string title = 2;
   string message = 3;
+}
+
+message TcpAuth{
+  string key = 1;
+  int64 timeStamp = 2;
+  string containerNumber = 3;
 }
