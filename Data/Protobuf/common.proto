@@ -11,6 +11,7 @@ message Envelope {
     SendKakaoAlertNotification kakaoAlert = 4;
     NtfyNotification ntfy = 5;
     TcpAuth auth = 6;
+    CommonMessage message = 7;
   }
 }
 
@@ -46,4 +47,8 @@ message TcpAuth{
   string key = 1;
   int64 timeStamp = 2;
   string containerNumber = 3;
+}
+
+message CommonMessage{
+  string message = 1;
 }
