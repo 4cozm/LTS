@@ -7,6 +7,7 @@ using LTS.Base;
 using LTS.Services;
 using CommsProto;
 
+
 namespace LTS.Pages.Register
 {
     public class IndexModel : BasePageModel
@@ -114,15 +115,21 @@ namespace LTS.Pages.Register
                 ModelState.AddModelError(string.Empty, "알 수 없는 이유로 직원 등록에 실패했습니다.");
                 return Page();
             }
-                    var authEnvelope = new Envelope
-        {
-            // KakaoAlert = new SendKakaoAlertNotification
-            // {
-            //     templateTitle = "직원 등록 안내",
-            //     receiver = PhoneNumber,
-            //     variables = {}
-            // }
-        };
+            var authEnvelope = new Envelope
+            {
+                KakaoAlert = new SendKakaoAlertNotification
+                {
+                    TemplateTitle = "직원 등록 안내",
+                    Receiver = PhoneNumber,
+                    Variables =
+                    {
+                        { "직원명", Name ?? "" },
+                        { "이니셜", RoleName ?? "" },
+                        { "전화번호", PhoneNumber ?? "" }
+                    }
+                }
+            };
+            
             Console.WriteLine($"[LOG] 직원 등록 완료 : {newEmployee.Initials}, {newEmployee.Store}, {newEmployee.RoleName}, {newEmployee.CreatedByMember}");
 
             return RedirectToPage("/Result/Index");

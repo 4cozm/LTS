@@ -34,7 +34,7 @@ message ServerStatus {
 message SendKakaoAlertNotification {
   string templateTitle = 1;
   string receiver = 2;
-  string variables = 3;
+  map<string, string> variables = 3;
 }
 
 message NtfyNotification {
