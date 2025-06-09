@@ -12,7 +12,8 @@ builder.Services
     .AddLtsCoreServices()
     .AddInfrastructureServices()
     .AddWebUiServices()
-    .AddCommonUtilities();
+    .AddCommonUtilities()
+    .AddHostedService<TcpClientBackgroundService>();
 // Web 및 Razor 설정
 ConfigureWeb(builder.Services);
 

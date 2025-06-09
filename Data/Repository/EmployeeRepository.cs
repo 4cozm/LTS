@@ -43,12 +43,13 @@ public class EmployeeRepository
             }
 
             string query = @"
-            INSERT INTO employees (name,initials, password, store, role_name, work_start_date, created_by_member) 
-            VALUES (@Name,@Initials, @Password, @Store, @RoleName, @WorkStartDate, @CreatedByMember)";
+            INSERT INTO employees (name,phone_number,initials, password, store, role_name, work_start_date, created_by_member) 
+            VALUES (@Name,@PhoneNumber,@Initials, @Password, @Store, @RoleName, @WorkStartDate, @CreatedByMember)";
 
             var result = conn.Execute(query, new
             {
                 employee.Name,
+                employee.PhoneNumber,
                 employee.Initials,
                 employee.Password,
                 employee.Store,

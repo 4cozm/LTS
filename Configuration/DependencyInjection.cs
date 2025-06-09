@@ -21,7 +21,8 @@ public static class DependencyInjection
     {
         // 예: MySql 연결 설정, HttpClient 설정 등
         // services.AddHttpClient<IMyApiClient, MyApiClient>();
-
+        services.AddSingleton<SendProtoMessage>();
+        services.AddSingleton<ITcpConnectionService, TcpConnectionService>();
         return services;
     }
 
