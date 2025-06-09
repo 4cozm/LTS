@@ -2,6 +2,7 @@ using LTS.Services;
 
 
 namespace LTS.MiddleWare;
+
 public class SessionValidationMiddleware
 {
     private readonly RequestDelegate _next;
@@ -16,7 +17,7 @@ public class SessionValidationMiddleware
         var path = context.Request.Path;
 
         // 인증 제외 경로 지정
-        var excludedPaths = new[] { "/", "/Index","/Home","/ChangePassword" };
+        var excludedPaths = new[] { "/", "/Index" };
 
         if (!excludedPaths.Any(p => string.Equals(p, path, StringComparison.OrdinalIgnoreCase)))
         {

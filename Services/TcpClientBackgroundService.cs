@@ -10,6 +10,12 @@ using CommsProto;
 
 public class TcpClientBackgroundService : BackgroundService
 {
+    private readonly ITcpConnectionService _connectionService;
+
+    public TcpClientBackgroundService(ITcpConnectionService connectionService)
+    {
+        _connectionService = connectionService;
+    }
 
     private TcpClient? _client;
     private NetworkStream? _stream;
@@ -25,6 +31,8 @@ public class TcpClientBackgroundService : BackgroundService
                 _stream = _client.GetStream();
 
                 Console.WriteLine("Watch Tower 서버에 연결 성공");
+
+                _connectionService.SetStream(_stream);
 
                 await SendAuthMessageAsync(_stream);// 인증 발송
 
