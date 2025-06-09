@@ -45,94 +45,107 @@ namespace LTS.Pages.Register
         public string? RoleName { get; set; }
 
         private readonly EmployeeRepository _employeeRepository;
+        private readonly SendProtoMessage _sender;
 
-        public IndexModel(EmployeeRepository employeeRepository)
+        public IndexModel(EmployeeRepository employeeRepository, SendProtoMessage sender)
         {
             _employeeRepository = employeeRepository;
+            _sender = sender;
         }
 
-        public IActionResult OnPost()
+        public async Task<IActionResult> OnPost()
         {
-            if (EffectiveDate > DateTime.Today)
+            try
             {
-                ModelState.AddModelError("EffectiveDate", "미래는 선택할 수 없습니다");
-                return Page();
-            }
-
-            if (!ModelState.IsValid)
-            {
-                return Page();
-            }
-
-            var token = Request.Cookies["LTS-Session"];
-            if (string.IsNullOrEmpty(token))
-            {
-                Console.WriteLine("[ALERT] 미들웨어 검증 무시하고 접근중");
-                ModelState.AddModelError(string.Empty, "잘못된 방법으로 접근하셨습니다.");
-                return Page();
-            }
-
-            var (isValid, employee) = LoginService.TryGetValidEmployeeFromToken(token);
-            if (!isValid || employee == null)
-            {
-                NoticeService.RedirectWithNotice(HttpContext, "세션이 만료되었거나 유효하지 않습니다", "/Index");
-                return new EmptyResult();
-            }
-
-            Console.WriteLine($"[LOG] {RoleName} 등록 요청중 : {employee.Name}");
-            if (employee.RoleName != "Manager" && employee.RoleName != "Owner")
-            {
-                Console.WriteLine($"[ALERT] 스태프 등록 권한 없음 : {employee.Name}");
-                ModelState.AddModelError(string.Empty, "권한이 부족합니다.");
-                return Page();
-            }
-
-            if (RoleName == "Manager" && employee.RoleName != "Owner")
-            {
-                Console.WriteLine($"[ALERT] 매니저 등록 권한 없음 : {employee.Name}");
-                ModelState.AddModelError(string.Empty, "권한이 부족합니다.");
-                return Page();
-            }
-
-            var hashedPassword = BCrypt.Net.BCrypt.HashPassword(PhoneNumber);
-
-            var newEmployee = new Employee
-            {
-                Name = Name,
-                Initials = Initial,
-                Password = hashedPassword,
-                Store = StoreName,
-                RoleName = RoleName,
-                WorkStartDate = EffectiveDate ?? DateTime.Today,
-                CreatedAt = DateTime.UtcNow,
-                CreatedByMember = employee.Name
-            };
-
-            var created = _employeeRepository.CreateEmployee(newEmployee);
-
-            if (created == null)
-            {
-                ModelState.AddModelError(string.Empty, "알 수 없는 이유로 직원 등록에 실패했습니다.");
-                return Page();
-            }
-            var authEnvelope = new Envelope
-            {
-                KakaoAlert = new SendKakaoAlertNotification
+                if (EffectiveDate > DateTime.Today)
                 {
-                    TemplateTitle = "직원 등록 안내",
-                    Receiver = PhoneNumber,
-                    Variables =
+                    ModelState.AddModelError("EffectiveDate", "미래는 선택할 수 없습니다");
+                    return Page();
+                }
+
+                if (!ModelState.IsValid)
+                {
+                    return Page();
+                }
+
+                var token = Request.Cookies["LTS-Session"];
+                if (string.IsNullOrEmpty(token))
+                {
+                    Console.WriteLine("[ALERT] 미들웨어 검증 무시하고 접근중");
+                    ModelState.AddModelError(string.Empty, "잘못된 방법으로 접근하셨습니다.");
+                    return Page();
+                }
+
+                var (isValid, employee) = LoginService.TryGetValidEmployeeFromToken(token);
+                if (!isValid || employee == null)
+                {
+                    NoticeService.RedirectWithNotice(HttpContext, "세션이 만료되었거나 유효하지 않습니다", "/Index");
+                    return new EmptyResult();
+                }
+
+                Console.WriteLine($"[LOG] {RoleName} 등록 요청중 : {employee.Name}");
+                if (employee.RoleName != "Manager" && employee.RoleName != "Owner")
+                {
+                    Console.WriteLine($"[ALERT] 스태프 등록 권한 없음 : {employee.Name}");
+                    ModelState.AddModelError(string.Empty, "권한이 부족합니다.");
+                    return Page();
+                }
+
+                if (RoleName == "Manager" && employee.RoleName != "Owner")
+                {
+                    Console.WriteLine($"[ALERT] 매니저 등록 권한 없음 : {employee.Name}");
+                    ModelState.AddModelError(string.Empty, "권한이 부족합니다.");
+                    return Page();
+                }
+
+                var hashedPassword = BCrypt.Net.BCrypt.HashPassword(PhoneNumber);
+
+                var newEmployee = new Employee
+                {
+                    Name = Name,
+                    PhoneNumber = PhoneNumber,
+                    Initials = Initial,
+                    Password = hashedPassword,
+                    Store = StoreName,
+                    RoleName = RoleName,
+                    WorkStartDate = EffectiveDate ?? DateTime.Today,
+                    CreatedAt = DateTime.UtcNow,
+                    CreatedByMember = "ADMIN"
+                };
+
+                var created = _employeeRepository.CreateEmployee(newEmployee);
+
+                if (created == null)
+                {
+                    ModelState.AddModelError(string.Empty, "알 수 없는 이유로 직원 등록에 실패했습니다.");
+                    return Page();
+                }
+                var authEnvelope = new Envelope
+                {
+                    KakaoAlert = new SendKakaoAlertNotification
+                    {
+                        TemplateTitle = "직원 등록 안내",
+                        Receiver = PhoneNumber,
+                        Variables =
                     {
                         { "직원명", Name ?? "" },
-                        { "이니셜", RoleName ?? "" },
+                        { "이니셜", Initial ?? "" },
                         { "전화번호", PhoneNumber ?? "" }
                     }
-                }
-            };
-            
-            Console.WriteLine($"[LOG] 직원 등록 완료 : {newEmployee.Initials}, {newEmployee.Store}, {newEmployee.RoleName}, {newEmployee.CreatedByMember}");
+                    }
+                };
+                await _sender.SendMessageAsync(authEnvelope);
 
-            return RedirectToPage("/Result/Index");
+                Console.WriteLine($"[LOG] 직원 등록 완료 : {newEmployee.Initials}, {newEmployee.Store}, {newEmployee.RoleName}, {newEmployee.CreatedByMember}");
+                return Redirect("/Result/Success");
+
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Register 페이지에서 예외 발생", e.Message);
+                return Redirect("/Result/Failed");
+            }
+
         }
     }
 }
