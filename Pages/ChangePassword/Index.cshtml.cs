@@ -36,20 +36,29 @@ namespace LTS.Pages.ChangePassword
 
         public bool IsCodeSent { get; private set; } = false;
         public bool IsVerified { get; private set; } = false;
+        private string? Token { get; set; }
+        public bool IsLogin { get; private set; }
 
-
-        public void OnGet()
+        public IActionResult OnGet()
         {
-            CurrentEmployee = HttpContext.Items["Employee"] as Employee;
-            if (CurrentEmployee == null)
+            Token = Request.Cookies["LTS-Session"];
+            if (string.IsNullOrEmpty(Token))
             {
-                ModelState.AddModelError(string.Empty, "로그인 된 직원 정보를 찾을 수 없습니다.");
-                return;
+                return NoticeService.RedirectWithNotice(HttpContext, "로그인이 필요합니다.", "/Index");
+            }
+
+            (IsLogin, CurrentEmployee) = LoginService.TryGetValidEmployeeFromToken(Token);
+            if (!IsLogin || CurrentEmployee == null)
+            {
+                return NoticeService.RedirectWithNotice(HttpContext, "세션이 만료되었거나 유효하지 않습니다.", "/Index");
             }
 
             PhoneNumber = CurrentEmployee.PhoneNumber;
+            Console.WriteLine("현재 직원 번호"+CurrentEmployee);
             SyncSessionToViewModel();
+            return Page();
         }
+
 
 
         public IActionResult OnPostVerify()

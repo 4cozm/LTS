@@ -34,6 +34,13 @@ public static class DependencyInjection
             // 모든 Razor 페이지에 자동 CSRF 방어 필터 적용
             options.Conventions.ConfigureFilter(new Microsoft.AspNetCore.Mvc.AutoValidateAntiforgeryTokenAttribute());
         });
+        services.AddDistributedMemoryCache(); // 세션 저장소 (메모리 기반)
+        services.AddSession(options =>
+        {
+            options.IdleTimeout = TimeSpan.FromMinutes(30); // 세션 유효 시간
+            options.Cookie.HttpOnly = true;
+            options.Cookie.IsEssential = true; // GDPR 대응용 (항상 쿠키 사용)
+        });
 
         services.AddAntiforgery();
 

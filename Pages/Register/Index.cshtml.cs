@@ -68,35 +68,35 @@ namespace LTS.Pages.Register
                     return Page();
                 }
 
-                var token = Request.Cookies["LTS-Session"];
-                if (string.IsNullOrEmpty(token))
-                {
-                    Console.WriteLine("[ALERT] 미들웨어 검증 무시하고 접근중");
-                    ModelState.AddModelError(string.Empty, "잘못된 방법으로 접근하셨습니다.");
-                    return Page();
-                }
+                // var token = Request.Cookies["LTS-Session"];
+                // if (string.IsNullOrEmpty(token))
+                // {
+                //     Console.WriteLine("[ALERT] 미들웨어 검증 무시하고 접근중");
+                //     ModelState.AddModelError(string.Empty, "잘못된 방법으로 접근하셨습니다.");
+                //     return Page();
+                // }
 
-                var (isValid, employee) = LoginService.TryGetValidEmployeeFromToken(token);
-                if (!isValid || employee == null)
-                {
-                    NoticeService.RedirectWithNotice(HttpContext, "세션이 만료되었거나 유효하지 않습니다", "/Index");
-                    return new EmptyResult();
-                }
+                // var (isValid, employee) = LoginService.TryGetValidEmployeeFromToken(token);
+                // if (!isValid || employee == null)
+                // {
+                //     NoticeService.RedirectWithNotice(HttpContext, "세션이 만료되었거나 유효하지 않습니다", "/Index");
+                //     return new EmptyResult();
+                // }
 
-                Console.WriteLine($"[LOG] {RoleName} 등록 요청중 : {employee.Name}");
-                if (employee.RoleName != "Manager" && employee.RoleName != "Owner")
-                {
-                    Console.WriteLine($"[ALERT] 스태프 등록 권한 없음 : {employee.Name}");
-                    ModelState.AddModelError(string.Empty, "권한이 부족합니다.");
-                    return Page();
-                }
+                // Console.WriteLine($"[LOG] {RoleName} 등록 요청중 : {employee.Name}");
+                // if (employee.RoleName != "Manager" && employee.RoleName != "Owner")
+                // {
+                //     Console.WriteLine($"[ALERT] 스태프 등록 권한 없음 : {employee.Name}");
+                //     ModelState.AddModelError(string.Empty, "권한이 부족합니다.");
+                //     return Page();
+                // }
 
-                if (RoleName == "Manager" && employee.RoleName != "Owner")
-                {
-                    Console.WriteLine($"[ALERT] 매니저 등록 권한 없음 : {employee.Name}");
-                    ModelState.AddModelError(string.Empty, "권한이 부족합니다.");
-                    return Page();
-                }
+                // if (RoleName == "Manager" && employee.RoleName != "Owner")
+                // {
+                //     Console.WriteLine($"[ALERT] 매니저 등록 권한 없음 : {employee.Name}");
+                //     ModelState.AddModelError(string.Empty, "권한이 부족합니다.");
+                //     return Page();
+                // }
 
                 var hashedPassword = BCrypt.Net.BCrypt.HashPassword(PhoneNumber);
 
@@ -137,13 +137,13 @@ namespace LTS.Pages.Register
                 await _sender.SendMessageAsync(authEnvelope);
 
                 Console.WriteLine($"[LOG] 직원 등록 완료 : {newEmployee.Initials}, {newEmployee.Store}, {newEmployee.RoleName}, {newEmployee.CreatedByMember}");
-                return Redirect("/Result/Success");
+                return RedirectToPage("/Result/Success");
 
             }
             catch (Exception e)
             {
                 Console.WriteLine("Register 페이지에서 예외 발생", e.Message);
-                return Redirect("/Result/Failed");
+                return RedirectToPage("/Result/Failed");
             }
 
         }

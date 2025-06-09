@@ -1,7 +1,6 @@
 
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using LTS.Services;
 using LTS.Base;
 namespace LTS.Pages
@@ -38,7 +37,7 @@ namespace LTS.Pages
                     Expires = session.ExpireAt,
                     SameSite = SameSiteMode.Strict
                 });
-                HttpContext.Response.Redirect("/Register");
+                HttpContext.Response.Redirect("/Home");
                 return new EmptyResult();
             }
             catch (UnauthorizedAccessException ex)
