@@ -1,4 +1,5 @@
 using CommsProto;
+using Mysqlx;
 
 namespace LTS.Services;
 
@@ -34,7 +35,7 @@ public class SendProtoMessage
         catch (Exception e)
         {
             Console.WriteLine("SendMessageAsync에서 에러 발생", e.Message);
-            return;
+            throw new Exception(e.Message);
         }
     }
 }

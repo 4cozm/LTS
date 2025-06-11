@@ -37,7 +37,7 @@ public static class DependencyInjection
         services.AddDistributedMemoryCache(); // 세션 저장소 (메모리 기반)
         services.AddSession(options =>
         {
-            options.IdleTimeout = TimeSpan.FromMinutes(30); // 세션 유효 시간
+            options.IdleTimeout = TimeSpan.FromMinutes(5); // 세션 유효 시간
             options.Cookie.HttpOnly = true;
             options.Cookie.IsEssential = true; // GDPR 대응용 (항상 쿠키 사용)
         });

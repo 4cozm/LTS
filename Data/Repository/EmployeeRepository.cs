@@ -1,6 +1,7 @@
 using Dapper;
 using LTS.Models;
 using MySql.Data.MySqlClient;
+
 namespace LTS.Data.Repository;
 /*
 Repository 계층에서는 모든 예외를 InvalidOperationException으로 감싸서 던지는 책임을 진다
@@ -108,6 +109,7 @@ public class EmployeeRepository
             {
                 throw new InvalidOperationException("비밀번호를 변경할 직원이 존재하지 않거나, 변경에 실패했습니다.");
             }
+
         }
         catch (MySqlException ex)
         {
