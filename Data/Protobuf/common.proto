@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+package comms;
+option csharp_namespace = "CommsProto";
+
+message Envelope {
+  oneof payload {
+    Ping ping = 1;
+    Pong pong = 2;
+    ServerStatus status = 3;
+    SendKakaoAlertNotification kakaoAlert = 4;
+    NtfyNotification ntfy = 5;
+    TcpAuth auth = 6;
+    CommonMessage message = 7;
+  }
+}
+
+message Ping {
+  string from = 1;
+  int64 timestamp = 2;
+}
+
+message Pong {
+  string from = 1;
+  int64 timestamp = 2;
+}
+
+message ServerStatus {
+  float cpuUsage = 1;
+  float memoryUsage = 2;
+  string hostname = 3;
+}
+
+message SendKakaoAlertNotification {
+  string templateTitle = 1;
+  string receiver = 2;
+  map<string, string> variables = 3;
+}
+
+message NtfyNotification {
+  string topic = 1;
+  string title = 2;
+  string message = 3;
+}
+
+message TcpAuth{
+  string key = 1;
+  int64 timeStamp = 2;
+  string containerNumber = 3;
+}
+
+message CommonMessage{
+  string message = 1;
+}
