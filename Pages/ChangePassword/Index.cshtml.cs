@@ -87,7 +87,7 @@ namespace LTS.Pages.ChangePassword
 
         public IActionResult OnPostChangePassword()
         {
-            if (!IsVerified)
+            if (HttpContext.Session.GetString("IsVerified") != "true")
             {
                 return NoticeService.RedirectWithNotice(HttpContext, "인증되지 않은 요청입니다.", "/ChangePassword");
             }

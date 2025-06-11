@@ -1,88 +1,49 @@
 @page
 @model LTS.Pages.PurchasePrepaid.IndexModel
 @{
-    ViewData["Title"] = "선불권 구매";
+    ViewData["Title"] = "선불권 구매 인증";
 }
 <div class="container mt-5" style="max-width: 480px;">
-    <h1 class="mb-4">@ViewData["Title"]</h1>
+    <h2>@ViewData["Title"]</h2>
 
-    <!-- 1) 전화번호 입력 & 발송 버튼 -->
-    <div class="mb-3">
-        <label asp-for="PhoneNumber" class="form-label">고객 전화번호</label>
-        <div class="input-group">
-            <input asp-for="PhoneNumber" class="form-control" placeholder="010-1234-5678" autocomplete="tel" />
-            <button id="sendCodeBtn" type="button" class="btn btn-primary">
-                인증번호 발송
-            </button>
+    @if (TempData["Message"] is string msg)
+    {
+        <div class="alert alert-info">@msg</div>
+    }
+
+    <!-- 1. 전화번호 입력 + 발송 버튼 -->
+    <form method="post" asp-page-handler="SendCode">
+        <div class="mb-3">
+            <label asp-for="PhoneNumber" class="form-label">전화번호</label>
+            <div class="input-group">
+                <input asp-for="PhoneNumber" class="form-control" placeholder="010-1234-5678" />
+                <button type="submit" class="btn btn-primary">인증번호 발송</button>
+            </div>
+            <span asp-validation-for="PhoneNumber" class="text-danger"></span>
         </div>
-    </div>
+    </form>
 
-    <!-- 2) (초기에는 숨겨놓는) 인증번호 입력 + 타이머 -->
-    <div id="verificationSection" class="mb-3 d-none">
-        <label asp-for="VerificationCode" class="form-label">인증번호 입력</label>
-        <div class="input-group">
-            <input asp-for="VerificationCode" id="verificationCode" class="form-control" placeholder="6자리 숫자"
-                maxlength="6" />
-            <span class="input-group-text" id="countdownTimer">03:00</span>
+    <!-- 2. 인증번호 입력 (발송되었을 때만 보여줌) -->
+    @if (Model.IsCodeSent)
+    {
+        <form method="post" asp-page-handler="Verify">
+            <div class="mb-3">
+                <label asp-for="VerificationCode" class="form-label">인증번호 입력</label>
+                <div class="input-group">
+                    <input asp-for="VerificationCode" class="form-control" maxlength="6" placeholder="6자리 숫자" />
+                    <span class="input-group-text">3분 이내</span>
+                </div>
+                <span asp-validation-for="VerificationCode" class="text-danger"></span>
+            </div>
+            <button class="btn btn-success">확인</button>
+        </form>
+    }
+
+    <!-- 3. 인증 완료시 다음 단계로 이동 -->
+    @if (Model.IsVerified)
+    {
+        <div class="mt-3">
+            <a href="/PurchasePrepaid/Confirm" class="btn btn-outline-success">다음 단계로</a>
         </div>
-    </div>
-
-    <!-- 3) 최종 제출 버튼 -->
-    <button type="submit" class="btn btn-success">구매 계속</button>
+    }
 </div>
-
-@section Scripts {
-    <script>
-        (function () {
-            // ——— 1) 요소 선택 ———
-            const sendBtn = document.getElementById('sendCodeBtn');
-            const verSection = document.getElementById('verificationSection');
-            const timerEl = document.getElementById('countdownTimer');
-
-            let remaining = 180;   // 3분(초)
-            let intervalId = null;
-
-            // ——— 2) ‘인증번호 발송’ 클릭 핸들러 ———
-            sendBtn.addEventListener('click', () => {
-                // 2-1) 버튼 비활성화
-                sendBtn.disabled = true;
-
-                // 2-2) 실제 서버 호출 (Ajax) 부분
-                // fetch(...).then(...).catch(...);
-                // —> 서버에서 SMS/알림톡 보내고, 성공 시에만 아래 타이머·입력창 보여주도록 확장 가능
-
-                // 2-3) UI 보여주기
-                verSection.classList.remove('d-none');
-                startCountdown();
-            });
-
-            // ——— 3) 카운트다운 로직 ———
-            function startCountdown() {
-                // 초기 표시
-                remaining = 180;
-                timerEl.textContent = formatTime(remaining);
-
-                // 1초마다 남은 시간 감소
-                intervalId = setInterval(() => {
-                    remaining--;
-                    timerEl.textContent = formatTime(remaining);
-
-                    // 0초 이하 시 타이머 중단 & 버튼 재활성화
-                    if (remaining <= 0) {
-                        clearInterval(intervalId);
-                        timerEl.textContent = '만료';
-                        sendBtn.disabled = false;
-                    }
-                }, 1000);
-            }
-
-            // ——— 4) mm:ss 포맷 함수 ———
-            function formatTime(sec) {
-                const m = Math.floor(sec / 60);
-                const s = sec % 60;
-                return (m < 10 ? '0' : '') + m
-                    + ':' + (s < 10 ? '0' : '') + s;
-            }
-        })();
-    </script>
-}
