@@ -4,7 +4,7 @@ public class Employee
 {
     public override string ToString()
     {
-        return $"[Employee] Id: {Id}, Initials: {Initials}, Name: {Name}, Role: {RoleName}, Store: {Store}";
+        return $"[Employee] Id: {Id}, Initials: {Initials}, Name: {Name}, Role: {RoleName}, Store: {Store}, PhoneNumber: {PhoneNumber}";
     }
     public int Id { get; set; }                         //DB 고유키 (읽기용)
     public string? Name { get; set; }                  // 이름 (예: 안홍걸)

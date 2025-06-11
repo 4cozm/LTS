@@ -11,6 +11,9 @@ public class SendProtoMessage
         _tcp = tcp;
     }
 
+    /*
+    다 만들어진 envelope를 전달하면 메세지 전송까지 해줌
+    */
     public async Task SendMessageAsync(Envelope envelope)
     {
         try

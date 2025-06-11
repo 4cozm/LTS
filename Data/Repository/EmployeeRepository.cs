@@ -23,6 +23,7 @@ public class EmployeeRepository
             store AS Store,
             role_name AS RoleName,
             work_start_date AS WorkStartDate,
+            phone_number AS PhoneNumber,
             created_at AS CreatedAt,
             created_by_member AS CreatedByMember
         FROM employees

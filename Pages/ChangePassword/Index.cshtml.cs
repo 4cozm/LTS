@@ -4,12 +4,14 @@ using LTS.Models;
 using Microsoft.AspNetCore.Mvc;
 using LTS.Services;
 using LTS.Data.Repository;
+using CommsProto;
 
 namespace LTS.Pages.ChangePassword
 {
-    public class IndexModel(EmployeeRepository employeeRepository) : BasePageModel
+    public class IndexModel(EmployeeRepository employeeRepository, SendProtoMessage sender) : BasePageModel
     {
         private readonly EmployeeRepository _employeeRepository = employeeRepository;
+        private readonly SendProtoMessage _sender = sender;
 
         [BindProperty(SupportsGet = true)]
         public string? PhoneNumber { get; set; }
@@ -39,6 +41,7 @@ namespace LTS.Pages.ChangePassword
         private string? Token { get; set; }
         public bool IsLogin { get; private set; }
 
+
         public IActionResult OnGet()
         {
             Token = Request.Cookies["LTS-Session"];
@@ -54,12 +57,45 @@ namespace LTS.Pages.ChangePassword
             }
 
             PhoneNumber = CurrentEmployee.PhoneNumber;
-            Console.WriteLine("현재 직원 번호"+CurrentEmployee);
+            if (PhoneNumber == null)
+            {
+                return NoticeService.RedirectWithNotice(HttpContext, "휴대폰 번호를 불러오는데 실패했습니다.", "/Index");
+            }
+            HttpContext.Session.SetString("PhoneNumber", PhoneNumber);
             SyncSessionToViewModel();
             return Page();
         }
 
+        public async Task<IActionResult> OnPostSendCode()
+        {
+            // 인증번호 생성
+            string code = GenerateVerificationCode();
+            var session = HttpContext.Session;
+            PhoneNumber = session.GetString("PhoneNumber");
+            Console.WriteLine("휴대폰 번호 잘 저장되어 있나?" + PhoneNumber);
 
+            // 세션에 저장
+            HttpContext.Session.SetString("VerificationCode", code);
+            HttpContext.Session.SetString("VerificationCodeExpires", DateTime.UtcNow.AddMinutes(3).ToString());
+            HttpContext.Session.SetString("VerificationCodeSent", "true");
+
+            // 문자 발송 (서버에서 외부 API 호출)
+            var VerificationCodeEnvelope = new Envelope
+            {
+                KakaoAlert = new SendKakaoAlertNotification
+                {
+                    TemplateTitle = "고객 인증 요청",
+                    Receiver = PhoneNumber,
+                    Variables =
+                    {
+                        { "인증번호", code ?? "" },
+                    }
+                }
+            };
+            await _sender.SendMessageAsync(VerificationCodeEnvelope);
+
+            return NoticeService.RedirectWithNotice(HttpContext, "인증번호를 발송했습니다. 인증번호는 3분간 유효합니다.", "/ChangePassword");
+        }
 
         public IActionResult OnPostVerify()
         {
@@ -134,21 +170,6 @@ namespace LTS.Pages.ChangePassword
         }
 
 
-        public IActionResult OnPostSendCode()
-        {
-            // 인증번호 생성
-            string code = GenerateVerificationCode();
-            // 세션에 저장
-            HttpContext.Session.SetString("VerificationCode", code);
-            HttpContext.Session.SetString("VerificationCodeExpires", DateTime.UtcNow.AddMinutes(3).ToString());
-            HttpContext.Session.SetString("VerificationCodeSent", "true");
-
-            // 문자 발송 (서버에서 외부 API 호출)
-
-
-            return NoticeService.RedirectWithNotice(HttpContext, "인증번호를 발송했습니다. 인증번호는 3분간 유효합니다.", "/ChangePassword");
-        }
-
         //헬퍼 함수
         private static string GenerateVerificationCode(int length = 6)
         {
@@ -168,6 +189,7 @@ namespace LTS.Pages.ChangePassword
             session.Remove("VerificationCode");
             session.Remove("VerificationCodeExpires");
             session.Remove("VerificationCodeSent");
+            session.Remove("PhoneNumber");
         }
 
     }
