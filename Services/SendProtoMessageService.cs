@@ -1,4 +1,5 @@
 using CommsProto;
+using Mysqlx;
 
 namespace LTS.Services;
 
@@ -11,6 +12,9 @@ public class SendProtoMessage
         _tcp = tcp;
     }
 
+    /*
+    다 만들어진 envelope를 전달하면 메세지 전송까지 해줌
+    */
     public async Task SendMessageAsync(Envelope envelope)
     {
         try
@@ -31,7 +35,7 @@ public class SendProtoMessage
         catch (Exception e)
         {
             Console.WriteLine("SendMessageAsync에서 에러 발생", e.Message);
-            return;
+            throw new Exception(e.Message);
         }
     }
 }

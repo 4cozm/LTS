@@ -1,6 +1,7 @@
 using Dapper;
 using LTS.Models;
 using MySql.Data.MySqlClient;
+
 namespace LTS.Data.Repository;
 /*
 Repository 계층에서는 모든 예외를 InvalidOperationException으로 감싸서 던지는 책임을 진다
@@ -23,6 +24,7 @@ public class EmployeeRepository
             store AS Store,
             role_name AS RoleName,
             work_start_date AS WorkStartDate,
+            phone_number AS PhoneNumber,
             created_at AS CreatedAt,
             created_by_member AS CreatedByMember
         FROM employees
@@ -81,5 +83,45 @@ public class EmployeeRepository
             throw new InvalidOperationException("직원 생성 중 알 수 없는 오류가 발생했습니다.", ex);
         }
     }
+    public void UpdatePassword(int employeeId, string newPasswordHash)
+    {
+        try
+        {
+            using var conn = DbManager.GetConnection();
+            if (conn == null)
+            {
+                throw new InvalidOperationException("DB 연결에 실패했습니다.");
+            }
+
+            string query = @"
+            UPDATE employees
+            SET password = @Password,
+                is_password_changed = true
+            WHERE id = @Id";
+
+            int affectedRows = conn.Execute(query, new
+            {
+                Password = newPasswordHash,
+                Id = employeeId
+            });
+
+            if (affectedRows == 0)
+            {
+                throw new InvalidOperationException("비밀번호를 변경할 직원이 존재하지 않거나, 변경에 실패했습니다.");
+            }
+
+        }
+        catch (MySqlException ex)
+        {
+            Console.Error.WriteLine($"[MySQL 오류] {ex.Message}");
+            throw new InvalidOperationException("비밀번호 변경 중 DB 오류가 발생했습니다.", ex);
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"[알 수 없는 오류] {ex.Message}");
+            throw new InvalidOperationException("비밀번호 변경 중 알 수 없는 오류가 발생했습니다.", ex);
+        }
+    }
+
 
 }

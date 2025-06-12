@@ -18,6 +18,7 @@ builder.Services
 ConfigureWeb(builder.Services);
 
 var app = builder.Build();
+app.UseSession();
 app.UseStaticFiles();
 app.UseRouting();
 app.MapRazorPages();

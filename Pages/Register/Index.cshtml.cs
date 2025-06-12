@@ -110,7 +110,7 @@ namespace LTS.Pages.Register
                     RoleName = RoleName,
                     WorkStartDate = EffectiveDate ?? DateTime.Today,
                     CreatedAt = DateTime.UtcNow,
-                    CreatedByMember = "ADMIN"
+                    CreatedByMember = employee.Name
                 };
 
                 var created = _employeeRepository.CreateEmployee(newEmployee);
@@ -124,7 +124,7 @@ namespace LTS.Pages.Register
                 {
                     KakaoAlert = new SendKakaoAlertNotification
                     {
-                        TemplateTitle = "직원 등록 안내",
+                        TemplateTitle = "직원 등록",
                         Receiver = PhoneNumber,
                         Variables =
                     {
@@ -137,13 +137,13 @@ namespace LTS.Pages.Register
                 await _sender.SendMessageAsync(authEnvelope);
 
                 Console.WriteLine($"[LOG] 직원 등록 완료 : {newEmployee.Initials}, {newEmployee.Store}, {newEmployee.RoleName}, {newEmployee.CreatedByMember}");
-                return Redirect("/Result/Success");
+                return RedirectToPage("/Result/Success");
 
             }
             catch (Exception e)
             {
                 Console.WriteLine("Register 페이지에서 예외 발생", e.Message);
-                return Redirect("/Result/Failed");
+                return RedirectToPage("/Result/Failed");
             }
 
         }

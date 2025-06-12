@@ -6,7 +6,7 @@ namespace LTS.Services;
 public class SessionStore
 {
     private static readonly ConcurrentDictionary<string, (Employee Employee, DateTime ExpireAt)> _sessions = [];
-    
+
     public static SessionInfo CreateSession(Employee employee)
     {
         var expireAt = DateTime.UtcNow.AddHours(4); // 4시간 후 만료
@@ -24,5 +24,10 @@ public class SessionStore
             _sessions.TryRemove(token, out _);
         }
         return null;
+    }
+
+    public static void RemoveSession(string token)
+    {
+        _sessions.TryRemove(token, out _);
     }
 }
