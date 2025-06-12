@@ -110,7 +110,7 @@ namespace LTS.Pages.Register
                     RoleName = RoleName,
                     WorkStartDate = EffectiveDate ?? DateTime.Today,
                     CreatedAt = DateTime.UtcNow,
-                    CreatedByMember = "ADMIN"
+                    CreatedByMember = employee.Name
                 };
 
                 var created = _employeeRepository.CreateEmployee(newEmployee);
