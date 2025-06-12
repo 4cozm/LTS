@@ -4,5 +4,37 @@
     ViewData["Title"] = "홈페이지";
 }
 @* 네비게이션 바는 _Layout.cshtml에 있음 *@
+<link rel="stylesheet" href="~/css/button.css" />
+<div class="container mt-5">
+    <h2 class="mb-4">결제 대기 고객 목록</h2>
 
-<h3>신청중인 고객 목록</h3>
+    <table class="table table-striped table-hover align-middle text-center">
+        <thead class="table-dark">
+            <tr>
+                <th>고객명</th>
+                <th>전화번호</th>
+                <th>동의 시각</th>
+                <th>결제 처리</th>
+            </tr>
+        </thead>
+        <tbody id="pendingCustomerTable">
+            <!-- 예시 데이터 -->
+            <tr id="row-1">
+                <td>홍길동</td>
+                <td>010-1234-5678</td>
+                <td>2025-06-12 13:40</td>
+                <td>
+                    <button class="button"">결제 완료</button>
+                </td>
+            </tr>
+            <tr id="row-2">
+                <td>김영희</td>
+                <td>010-8765-4321</td>
+                <td>2025-06-12 13:55</td>
+                <td>
+                    <button class="button">결제 완료</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
