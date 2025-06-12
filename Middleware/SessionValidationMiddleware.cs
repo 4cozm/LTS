@@ -17,7 +17,7 @@ public class SessionValidationMiddleware
         var path = context.Request.Path;
 
         // 인증 제외 경로 지정
-        // var excludedPaths = new[] { "/", "/Index" };
+        var excludedPaths = new[] { "/", "/Index" };
 
         if (!excludedPaths.Any(p => string.Equals(p, path, StringComparison.OrdinalIgnoreCase)))
         {
@@ -28,7 +28,7 @@ public class SessionValidationMiddleware
                 return;
             }
 
-        //     var (isValid, employee) = LoginService.TryGetValidEmployeeFromToken(token);
+        var (isValid, employee) = LoginService.TryGetValidEmployeeFromToken(token);
 
             if (!isValid || employee == null)
             {
