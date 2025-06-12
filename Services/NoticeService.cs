@@ -8,20 +8,35 @@ public static class NoticeService
 {
     private const string NoticeCookieKey = "LTS-Notice";
 
+    // Razor Pages용
     public static IActionResult RedirectWithNotice(HttpContext context, string message, string redirectUrl)
     {
         var encoded = Uri.EscapeDataString(message);
-        context.Response.Cookies.Append(NoticeCookieKey, encoded, new CookieOptions
+        context.Response.Cookies.Append("LTS-Notice", encoded, new CookieOptions
         {
             Path = "/",
             HttpOnly = true,
-            IsEssential = true,
-            Secure = false, // HTTPS만 쓸 거면 true
-            SameSite = SameSiteMode.Lax
+            IsEssential = true
         });
 
         return new RedirectResult(redirectUrl);
     }
+
+    // 미들웨어용
+    public static async Task RedirectWithNoticeAsync(HttpContext context, string message, string redirectUrl)
+    {
+        var encoded = Uri.EscapeDataString(message);
+        context.Response.Cookies.Append("LTS-Notice", encoded, new CookieOptions
+        {
+            Path = "/",
+            HttpOnly = true,
+            IsEssential = true
+        });
+
+        context.Response.Redirect(redirectUrl);
+        await context.Response.CompleteAsync(); // 응답 종료
+    }
+
 
     public static void TransferToTempData(HttpContext context, ITempDataDictionary tempData)
     {
