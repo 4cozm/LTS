@@ -1,36 +1,40 @@
 @page
 @model LTS.Pages.Home.IndexModel
 @{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "홈페이지";
 }
-<link rel="stylesheet" href="/css/Home.css" />
+@* 네비게이션 바는 _Layout.cshtml에 있음 *@
+<link rel="stylesheet" href="~/css/button.css" />
+<div class="container mt-5">
+    <h2 class="mb-4">결제 대기 고객 목록</h2>
 
-
-
-<div class="nav">
-  <div class="container">
-    <div class="btn">쿠폰</div>
-    <div class="btn">선불권</div>
-    <div class="btn">회원관리</div>
-    <div class="btn">FAQ</div>
-    <svg
-      class="outline"
-      overflow="visible"
-      width="400"
-      height="60"
-      viewBox="0 0 400 60"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <rect
-        class="rect"
-        pathLength="100"
-        x="0"
-        y="0"
-        width="400"
-        height="60"
-        fill="transparent"
-        stroke-width="5"
-      ></rect>
-    </svg>
-  </div>
+    <table class="table table-striped table-hover align-middle text-center">
+        <thead class="table-dark">
+            <tr>
+                <th>고객명</th>
+                <th>전화번호</th>
+                <th>동의 시각</th>
+                <th>결제 처리</th>
+            </tr>
+        </thead>
+        <tbody id="pendingCustomerTable">
+            <!-- 예시 데이터 -->
+            <tr id="row-1">
+                <td>홍길동</td>
+                <td>010-1234-5678</td>
+                <td>2025-06-12 13:40</td>
+                <td>
+                    <button class="button"">결제 완료</button>
+                </td>
+            </tr>
+            <tr id="row-2">
+                <td>김영희</td>
+                <td>010-8765-4321</td>
+                <td>2025-06-12 13:55</td>
+                <td>
+                    <button class="button">결제 완료</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
 </div>

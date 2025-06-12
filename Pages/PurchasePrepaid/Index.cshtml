@@ -1,0 +1,49 @@
+@page
+@model LTS.Pages.PurchasePrepaid.IndexModel
+@{
+    ViewData["Title"] = "선불권 구매 인증";
+}
+<div class="container mt-5" style="max-width: 480px;">
+    <h2>@ViewData["Title"]</h2>
+
+    @if (TempData["Message"] is string msg)
+    {
+        <div class="alert alert-info">@msg</div>
+    }
+
+    <!-- 1. 전화번호 입력 + 발송 버튼 -->
+    <form method="post" asp-page-handler="SendCode">
+        <div class="mb-3">
+            <label asp-for="PhoneNumber" class="form-label">전화번호</label>
+            <div class="input-group">
+                <input asp-for="PhoneNumber" class="form-control" placeholder="010-1234-5678" />
+                <button type="submit" class="btn btn-primary">인증번호 발송</button>
+            </div>
+            <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+        </div>
+    </form>
+
+    <!-- 2. 인증번호 입력 (발송되었을 때만 보여줌) -->
+    @if (Model.IsCodeSent)
+    {
+        <form method="post" asp-page-handler="Verify">
+            <div class="mb-3">
+                <label asp-for="VerificationCode" class="form-label">인증번호 입력</label>
+                <div class="input-group">
+                    <input asp-for="VerificationCode" class="form-control" maxlength="6" placeholder="6자리 숫자" />
+                    <span class="input-group-text">3분 이내</span>
+                </div>
+                <span asp-validation-for="VerificationCode" class="text-danger"></span>
+            </div>
+            <button class="btn btn-success">확인</button>
+        </form>
+    }
+
+    <!-- 3. 인증 완료시 다음 단계로 이동 -->
+    @if (Model.IsVerified)
+    {
+        <div class="mt-3">
+            <a href="/PurchasePrepaid/Confirm" class="btn btn-outline-success">다음 단계로</a>
+        </div>
+    }
+</div>

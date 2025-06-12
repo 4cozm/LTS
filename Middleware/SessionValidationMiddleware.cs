@@ -28,7 +28,7 @@ public class SessionValidationMiddleware
                 return;
             }
 
-            var (isValid, employee) = LoginService.TryGetValidEmployeeFromToken(token);
+        var (isValid, employee) = LoginService.TryGetValidEmployeeFromToken(token);
 
             if (!isValid || employee == null)
             {
