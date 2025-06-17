@@ -22,7 +22,9 @@ app.UseSession();
 app.UseStaticFiles();
 app.UseRouting();
 app.MapRazorPages();
+app.MapHub<StatusHub>("/statusHub");
 app.UseMiddleware<SessionValidationMiddleware>();
+
 
 Console.WriteLine("등록된 매장🏢");
 Console.WriteLine(string.Join(", ", StoreService.GetAllStores()));

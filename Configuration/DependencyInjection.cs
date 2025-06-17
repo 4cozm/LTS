@@ -43,6 +43,7 @@ public static class DependencyInjection
         });
 
         services.AddAntiforgery();
+        services.AddSignalR();
 
         return services;
     }
