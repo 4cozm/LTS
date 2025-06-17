@@ -44,6 +44,8 @@
         </tbody>
     </table>
 </div>
+
+@* 서버 상태 표시기 *@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
 <script>
     const statusEl = document.getElementById("server-status");
@@ -53,33 +55,50 @@
         statusEl.style.backgroundColor = color;
     }
 
+    let retryCount = 0;
+    const maxRetries = 5;
+
     const connection = new signalR.HubConnectionBuilder()
         .withUrl("/statusHub")
-        .withAutomaticReconnect()
+        .withAutomaticReconnect({
+            nextRetryDelayInMilliseconds: retryContext => {
+                retryCount = retryContext.previousRetryCount + 1;
+
+                if (retryCount > maxRetries) {
+                    return null;
+                }
+
+                updateStatus(`재연결 중... (${retryCount}회차 시도)`, "#ffc107");
+
+                return 3000; // 3초 후 재시도
+            }
+        })
         .build();
 
-    connection.onreconnecting(() => {
-        updateStatus("재연결 중...", "#ffc107");
-    });
-
     connection.onreconnected(() => {
-        updateStatus("정상", "#28a745"); 
+        retryCount = 0;
+        updateStatus("정상", "#28a745");
     });
 
     connection.onclose(() => {
-        updateStatus("오프라인", "#dc3545"); 
+        if (retryCount >= maxRetries) {
+            updateStatus("오프라인 (재시도 실패)", "#dc3545");
+        } else {
+            updateStatus("연결 종료됨", "#dc3545");
+        }
     });
 
     connection.start()
-        .then(() => updateStatus("정상", "#28a745"))
+        .then(() => {
+            retryCount = 0;
+            updateStatus("정상", "#28a745");
+        })
         .catch(err => {
-            console.error("연결 실패:", err);
-            updateStatus("연결 실패", "#dc3545");
+            console.error("초기 연결 실패:", err);
+            updateStatus("초기 연결 실패", "#dc3545");
         });
 
     connection.on("ConsentReceived", function () {
         location.reload();
     });
-
-    connection.start();
 </script>
