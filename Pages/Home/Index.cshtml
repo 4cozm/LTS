@@ -5,6 +5,12 @@
 }
 @* 네비게이션 바는 _Layout.cshtml에 있음 *@
 <link rel="stylesheet" href="~/css/button.css" />
+
+<div id="server-status"
+    style="position: fixed; top: 10px; right: 10px; font-size: 0.9rem; color: white; background: gray; padding: 5px 10px; border-radius: 5px;">
+    서버 상태: 연결 시도 중...
+</div>
+
 <div class="container mt-5">
     <h2 class="mb-4">결제 대기 고객 목록</h2>
 
@@ -13,28 +19,96 @@
             <tr>
                 <th>고객명</th>
                 <th>전화번호</th>
+                <th>인증 발송</th>
                 <th>동의 시각</th>
-                <th>결제 처리</th>
+                <th>동의서 버전</th>
+                <th>상태</th>
             </tr>
         </thead>
-        <tbody id="pendingCustomerTable">
-            <!-- 예시 데이터 -->
-            <tr id="row-1">
-                <td>홍길동</td>
-                <td>010-1234-5678</td>
-                <td>2025-06-12 13:40</td>
-                <td>
-                    <button class="button"">결제 완료</button>
-                </td>
-            </tr>
-            <tr id="row-2">
-                <td>김영희</td>
-                <td>010-8765-4321</td>
-                <td>2025-06-12 13:55</td>
-                <td>
-                    <button class="button">결제 완료</button>
-                </td>
-            </tr>
+        <tbody>
+            @foreach (var c in Model.Customers)
+            {
+                <tr>
+                    <td>@(c.Name ?? "정보 없음")</td>
+                    <td>@c.FormattedPhoneNumber</td>
+                    <td>@(c.SentAt?.ToLocalTime().ToString("yyyy-MM-dd HH:mm") ?? "-")</td>
+                    <td>@(c.AgreedAt?.ToLocalTime().ToString("yyyy-MM-dd HH:mm") ?? "-")</td>
+                    <td>@(c.TermVersion ?? "-")</td>
+                    <td>
+                        @if (c.IsAgreed)
+                        {
+                            <button class="btn btn-success">결제 완료</button>
+                        }
+                        else
+                        {
+                            <button class="btn btn-warning">대기중</button>
+                        }
+                    </td>
+                </tr>
+            }
         </tbody>
     </table>
 </div>
+
+@* 서버 상태 표시기 *@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+<script>
+    const statusEl = document.getElementById("server-status");
+
+    function updateStatus(text, color) {
+        statusEl.textContent = `서버 상태: ${text}`;
+        statusEl.style.backgroundColor = color;
+    }
+
+    let retryCount = 0;
+    const maxRetries = 5;
+
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl("/statusHub")
+        .withAutomaticReconnect({
+            nextRetryDelayInMilliseconds: retryContext => {
+                retryCount = retryContext.previousRetryCount + 1;
+
+                if (retryCount > maxRetries) {
+                    return null;
+                }
+
+                updateStatus(`재연결 중... (${retryCount}회차 시도)`, "#ffc107");
+
+                return 3000; // 3초 후 재시도
+            }
+        })
+        .build();
+
+    connection.onreconnected(() => {
+        retryCount = 0;
+        updateStatus("정상", "#28a745");
+    });
+
+    connection.onclose(() => {
+        if (retryCount >= maxRetries) {
+            updateStatus("오프라인 (재시도 실패)", "#dc3545");
+        } else {
+            updateStatus("연결 종료됨", "#dc3545");
+        }
+    });
+
+    connection.start()
+        .then(() => {
+            retryCount = 0;
+            updateStatus("정상", "#28a745");
+        })
+        .catch(err => {
+            console.error("초기 연결 실패:", err);
+            updateStatus("초기 연결 실패", "#dc3545");
+        });
+
+    connection.on("ConsentReceived", function () {
+        location.reload();
+    });
+
+    connection.on("ConsentWithoutAuth", function (phoneNumber) {
+        phoneNumber = phoneNumber.replace(/[^0-9]/g, '');
+        alert(`${phoneNumber}로 동의했으나,번호 인증 목록에 해당 고객이 없습니다`);
+    })
+</script>

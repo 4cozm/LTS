@@ -3,11 +3,13 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.ComponentModel.DataAnnotations;
 using LTS.Services;
 using System.Text.RegularExpressions;
+using System.Text.Json;
 
 namespace LTS.Pages.PurchasePrepaid
 {
-    public class IndexModel : PageModel
+    public class IndexModel(RedisService redis) : PageModel
     {
+
         [BindProperty]
         [Required(ErrorMessage = "전화번호를 입력해주세요.")]
         public string? PhoneNumber { get; set; }
@@ -35,6 +37,7 @@ namespace LTS.Pages.PurchasePrepaid
             }
 
             string code = GenerateVerificationCode();
+            HttpContext.Session.SetString("PhoneNumber", PhoneNumber!);
             HttpContext.Session.SetString("VerificationCode", code);
             HttpContext.Session.SetString("VerificationCodeExpires", DateTime.UtcNow.AddMinutes(3).ToString());
             HttpContext.Session.SetString("VerificationCodeSent", "true");
@@ -45,10 +48,12 @@ namespace LTS.Pages.PurchasePrepaid
             return RedirectToPage();
         }
 
-        public IActionResult OnPostVerify()
+        public async Task<IActionResult> OnPostVerifyAsync()
         {
             var storedCode = HttpContext.Session.GetString("VerificationCode");
             var expiresRaw = HttpContext.Session.GetString("VerificationCodeExpires");
+            var PhoneNumber = HttpContext.Session.GetString("PhoneNumber");
+
             var action = Request.Form["action"];
             if (action == "reset")
             {
@@ -74,6 +79,17 @@ namespace LTS.Pages.PurchasePrepaid
                 return Page();
             }
             //TODO 약관 동의서 발송 코드
+
+            var db = redis.GetDatabase();
+            var key = $"consent:{PhoneNumber}";
+            var data = new ConsentData
+            {
+                PhoneNumber = PhoneNumber!,
+                SentAt = DateTime.UtcNow
+            };
+
+            await db.StringSetAsync(key, JsonSerializer.Serialize(data), TimeSpan.FromHours(24));
+
             ClearVerificationSession();
             return NoticeService.RedirectWithNotice(HttpContext, "인증이 완료되었습니다. 고객의 휴대폰으로 동의서가 발송 되었습니다.", "/Home");
         }
@@ -91,6 +107,7 @@ namespace LTS.Pages.PurchasePrepaid
             session.Remove("VerificationCode");
             session.Remove("VerificationCodeExpires");
             session.Remove("VerificationCodeSent");
+            session.Remove("PhoneNumber");
         }
     }
 }

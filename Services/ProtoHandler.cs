@@ -1,42 +1,76 @@
 namespace LTS.Services;
 
 using CommsProto;
+using Microsoft.AspNetCore.SignalR;
+using System.Text.Json;
 
-// Envelope 메시지에 정의된 각 메시지 타입을 처리할 핸들러들
-public static class ProtoHandler
+public class ProtoHandler(RedisService redisService, IHubContext<StatusHub> hubContext)
 {
-    public static void HandlePing(Ping pingMsg)
+    private readonly RedisService _redisService = redisService;
+
+    public void HandlePing(Ping pingMsg)
     {
-        // Ping 메시지 처리 로직
         Console.WriteLine($"[HandlePing] From: {pingMsg.From}, Timestamp: {pingMsg.Timestamp}");
     }
 
-    public static void HandlePong(Pong pongMsg)
+    public void HandlePong(Pong pongMsg)
     {
-        // Pong 메시지 처리 로직
         Console.WriteLine($"[HandlePong] From: {pongMsg.From}, Timestamp: {pongMsg.Timestamp}");
     }
 
-    public static void HandleServerStatus(ServerStatus statusMsg)
+    public void HandleServerStatus(ServerStatus statusMsg)
     {
-        // ServerStatus 메시지 처리 로직
         Console.WriteLine($"[HandleServerStatus] CPU: {statusMsg.CpuUsage}, Memory: {statusMsg.MemoryUsage}, Hostname: {statusMsg.Hostname}");
     }
 
-    public static void HandleSendKakaoAlertNotification(SendKakaoAlertNotification kakaoMsg)
+    public void HandleSendKakaoAlertNotification(SendKakaoAlertNotification kakaoMsg)
     {
-        // 카카오 알림 메시지 처리 로직
         Console.WriteLine($"[HandleKakaoAlert] TemplateTitle: {kakaoMsg.TemplateTitle}, Receiver: {kakaoMsg.Receiver}, Variables: {kakaoMsg.Variables}");
     }
 
-    public static void HandleNtfyNotification(NtfyNotification ntfyMsg)
+    public void HandleNtfyNotification(NtfyNotification ntfyMsg)
     {
-        // ntfy 알림 메시지 처리 로직
         Console.WriteLine($"[HandleNtfy] Topic: {ntfyMsg.Topic}, Title: {ntfyMsg.Title}, Message: {ntfyMsg.Message}");
     }
 
-    public static void HandleCommonMessage(CommonMessage message)
+    public void HandleCommonMessage(CommonMessage message)
     {
         Console.WriteLine($"Watch Tower 서버 : {message.Message}");
+    }
+
+    public async Task HandleTermAgreed(TermAgreed termAgreed)
+    {
+        try
+        {
+            var db = _redisService.GetDatabase();
+            var key = $"consent:{termAgreed.PhoneNumber}";
+
+            // 기존 데이터 조회
+            var existingJson = await db.StringGetAsync(key);
+            if (!existingJson.HasValue)
+            {
+                Console.WriteLine($"⚠️ 인증서 전송 없이 약관에만 동의: {termAgreed.PhoneNumber}");
+                await hubContext.Clients.All.SendAsync("ConsentWithoutAuth", termAgreed.PhoneNumber);
+                return;
+            }
+
+            ConsentData existing = existingJson.HasValue
+                ? JsonSerializer.Deserialize<ConsentData>(existingJson!)!
+                : new ConsentData { PhoneNumber = termAgreed.PhoneNumber };
+
+            // 병합
+            existing.Name = termAgreed.Name;
+            existing.TermVersion = termAgreed.TermVersion;
+            existing.AgreedAt = DateTime.UtcNow;
+
+            // 다시 저장
+            var newJson = JsonSerializer.Serialize(existing);
+            await db.StringSetAsync(key, newJson, TimeSpan.FromHours(24));
+            await hubContext.Clients.All.SendAsync("ConsentReceived"); //자동 새로고침 전파
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[HandleTermAgreed] Redis 저장 실패: {ex.Message}");
+        }
     }
 }

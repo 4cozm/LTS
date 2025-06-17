@@ -4,17 +4,18 @@ namespace LTS.Services;
 
 using System.Security.Cryptography;
 using System.Text;
-
-
+using System.Threading.Tasks;
 using CommsProto;
 
 public class TcpClientBackgroundService : BackgroundService
 {
     private readonly ITcpConnectionService _connectionService;
+    private readonly ProtoHandler _protoHandler;
 
-    public TcpClientBackgroundService(ITcpConnectionService connectionService)
+    public TcpClientBackgroundService(ITcpConnectionService connectionService, ProtoHandler protoHandler)
     {
         _connectionService = connectionService;
+        _protoHandler = protoHandler;
     }
 
     private TcpClient? _client;
@@ -56,6 +57,7 @@ public class TcpClientBackgroundService : BackgroundService
 
     private async Task ReceiveLoopAsync(NetworkStream stream, CancellationToken token)
     {
+
         // 1) 4바이트(길이) 읽기
         byte[] lengthPrefix = new byte[4];
         while (!token.IsCancellationRequested)
@@ -91,7 +93,7 @@ public class TcpClientBackgroundService : BackgroundService
             }
 
             // 3) 프로토버프 역직렬화 및 핸들러 호출
-            ProcessEnvelope(payloadBytes);
+            await ProcessEnvelope(payloadBytes);
         }
     }
 
@@ -105,7 +107,7 @@ public class TcpClientBackgroundService : BackgroundService
     }
 
 
-    private void ProcessEnvelope(byte[] payloadBytes)
+    private async Task ProcessEnvelope(byte[] payloadBytes)
     {
         // 3-1) 프로토버프 역직렬화
         Envelope envelope;
@@ -120,30 +122,33 @@ public class TcpClientBackgroundService : BackgroundService
         }
 
         // 3-2) 받은 메시지를 실제 핸들러로 전달
-        DispatchToHandler(envelope);
+        await DispatchToHandler(envelope);
     }
 
-    private void DispatchToHandler(Envelope envelope)
+    private async Task DispatchToHandler(Envelope envelope)
     {
         switch (envelope.PayloadCase)
         {
             case Envelope.PayloadOneofCase.Ping:
-                ProtoHandler.HandlePing(envelope.Ping);
+                _protoHandler.HandlePing(envelope.Ping);
                 break;
             case Envelope.PayloadOneofCase.Pong:
-                ProtoHandler.HandlePong(envelope.Pong);
+                _protoHandler.HandlePong(envelope.Pong);
                 break;
             case Envelope.PayloadOneofCase.Status:
-                ProtoHandler.HandleServerStatus(envelope.Status);
+                _protoHandler.HandleServerStatus(envelope.Status);
                 break;
             case Envelope.PayloadOneofCase.KakaoAlert:
-                ProtoHandler.HandleSendKakaoAlertNotification(envelope.KakaoAlert);
+                _protoHandler.HandleSendKakaoAlertNotification(envelope.KakaoAlert);
                 break;
             case Envelope.PayloadOneofCase.Ntfy:
-                ProtoHandler.HandleNtfyNotification(envelope.Ntfy);
+                _protoHandler.HandleNtfyNotification(envelope.Ntfy);
                 break;
             case Envelope.PayloadOneofCase.Message:
-                ProtoHandler.HandleCommonMessage(envelope.Message);
+                _protoHandler.HandleCommonMessage(envelope.Message);
+                break;
+            case Envelope.PayloadOneofCase.TermAgreed:
+                await _protoHandler.HandleTermAgreed(envelope.TermAgreed);
                 break;
             case Envelope.PayloadOneofCase.None:
             default:
