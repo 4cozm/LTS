@@ -145,6 +145,9 @@ public class TcpClientBackgroundService : BackgroundService
             case Envelope.PayloadOneofCase.Message:
                 ProtoHandler.HandleCommonMessage(envelope.Message);
                 break;
+            case Envelope.PayloadOneofCase.TermAgreed:
+                ProtoHandler.HandleTermAgreed(envelope.TermAgreed);
+                break;
             case Envelope.PayloadOneofCase.None:
             default:
                 Console.WriteLine("알 수 없는 타입의 메시지가 들어왔습니다 또는 payload가 비어 있습니다.");

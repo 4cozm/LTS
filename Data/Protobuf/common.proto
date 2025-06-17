@@ -12,6 +12,7 @@ message Envelope {
     NtfyNotification ntfy = 5;
     TcpAuth auth = 6;
     CommonMessage message = 7;
+    TermAgreed termAgreed = 8;
   }
 }
 
@@ -51,4 +52,10 @@ message TcpAuth{
 
 message CommonMessage{
   string message = 1;
+}
+
+message TermAgreed{
+  string name = 1;
+  string phoneNumber =2;
+  string TermVersion =3;
 }

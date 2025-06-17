@@ -39,4 +39,10 @@ public static class ProtoHandler
     {
         Console.WriteLine($"Watch Tower 서버 : {message.Message}");
     }
+
+    public static void HandleTermAgreed(TermAgreed termAgreed)
+    {
+        //약관 동의 완료 메세지
+        
+    }
 }
