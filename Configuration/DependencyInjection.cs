@@ -1,5 +1,6 @@
 using LTS.Data.Repository;
 using LTS.Services;
+using StackExchange.Redis;
 
 namespace LTS.Configuration;
 
@@ -23,6 +24,8 @@ public static class DependencyInjection
         // services.AddHttpClient<IMyApiClient, MyApiClient>();
         services.AddSingleton<SendProtoMessage>();
         services.AddSingleton<ITcpConnectionService, TcpConnectionService>();
+        services.AddSingleton<IConnectionMultiplexer>(sp => ConnectionMultiplexer.Connect("localhost:6379"));
+        services.AddSingleton<RedisService>();
         return services;
     }
 
@@ -53,6 +56,7 @@ public static class DependencyInjection
     {
         // 예: 시간 관련 유틸, 환경설정 래퍼 등
         // services.AddSingleton<ITimeProvider, SystemTimeProvider>();
+        services.AddSingleton<ProtoHandler>();
 
         return services;
     }

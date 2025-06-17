@@ -25,6 +25,7 @@
     <PackageReference Include="Microsoft.jQuery.Unobtrusive.Validation" Version="4.0.0" />
     <PackageReference Include="MySql.Data" Version="9.2.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="StackExchange.Redis" Version="2.8.41" />
      <Protobuf Include="Data/protobuf/common.proto" GrpcServices="None" />
   </ItemGroup>
 
