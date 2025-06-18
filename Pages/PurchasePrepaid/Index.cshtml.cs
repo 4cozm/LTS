@@ -4,10 +4,13 @@ using System.ComponentModel.DataAnnotations;
 using LTS.Services;
 using System.Text.RegularExpressions;
 using System.Text.Json;
+using LTS.Models;
+using CommsProto;
+using LTS.Utils;
 
 namespace LTS.Pages.PurchasePrepaid
 {
-    public class IndexModel(RedisService redis) : PageModel
+    public class IndexModel(RedisService redis,SendProtoMessage sender) : PageModel
     {
 
         [BindProperty]
@@ -16,6 +19,7 @@ namespace LTS.Pages.PurchasePrepaid
 
         [BindProperty]
         public string? VerificationCode { get; set; }
+        public Employee? CurrentEmployee { get; private set; }
 
         public bool IsCodeSent => HttpContext.Session.GetString("VerificationCodeSent") == "true";
 
@@ -78,14 +82,33 @@ namespace LTS.Pages.PurchasePrepaid
                 ModelState.AddModelError(nameof(VerificationCode), "인증번호가 일치하지 않습니다.");
                 return Page();
             }
-            //TODO 약관 동의서 발송 코드
+            //약관 동의서 발송 코드
+            if (HttpContext.Items.TryGetValue("Employee", out var employeeObj))
+            {
+                CurrentEmployee = employeeObj as Employee;
+            }
+            var authEnvelope = new Envelope
+            {
+                KakaoAlert = new SendKakaoAlertNotification
+                {
+                    TemplateTitle = "약관 동의서 발송",
+                    Receiver = PhoneNumber,
+                    Variables =
+                    {
+                        { "매장명", "구매 매장:"+CurrentEmployee!.Store ?? "" },
+                        { "일시",  PrintCurrentDate.PrintDate() ?? "" },
+                    }
+                }
+            };
+            await sender.SendMessageAsync(authEnvelope);
 
             var db = redis.GetDatabase();
             var key = $"consent:{PhoneNumber}";
             var data = new ConsentData
             {
                 PhoneNumber = PhoneNumber!,
-                SentAt = DateTime.UtcNow
+                SentAt = DateTime.UtcNow,
+                StoreCode = CurrentEmployee.Store
             };
 
             await db.StringSetAsync(key, JsonSerializer.Serialize(data), TimeSpan.FromHours(24));
@@ -109,5 +132,7 @@ namespace LTS.Pages.PurchasePrepaid
             session.Remove("VerificationCodeSent");
             session.Remove("PhoneNumber");
         }
+
     }
+
 }
