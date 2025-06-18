@@ -5,6 +5,7 @@ public class ConsentData
     public string? TermVersion { get; set; }
     public DateTime? SentAt { get; set; }      // 인증 발송 시각
     public DateTime? AgreedAt { get; set; }    // 동의 시각
+    public string? StoreCode { get; set; }
 
     public bool IsAgreed => !string.IsNullOrEmpty(Name) && !string.IsNullOrEmpty(TermVersion);
     public string FormattedPhoneNumber =>
