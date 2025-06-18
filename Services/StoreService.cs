@@ -1,12 +1,12 @@
 public static class StoreService
 {
-    private static readonly Dictionary<string, string> _storeNameMap = new()
+    private static readonly Dictionary<string, (string Name, string Phone)> _storeMap = new()
     {
-        { "GA", "광안점" },
-        { "EH", "은행점" }
+        { "GA", ("광안점", "051-758-1123") },
+        { "EH", ("은행점", "042-222-9111") }
     };
 
-    private static readonly List<string> _validStores = _storeNameMap.Keys.ToList();
+    private static readonly List<string> _validStores = _storeMap.Keys.ToList();
 
     private static readonly List<string> _validRoles =
     [
@@ -36,11 +36,15 @@ public static class StoreService
 
     public static string? GetStoreDisplayName(string storeCode)
     {
-        var hangul = _storeNameMap.TryGetValue(storeCode, out var name) ? name : null;
-        if (hangul == null)
-        {
-            return storeCode;
-        }
-        return hangul;
+        return _storeMap.TryGetValue(storeCode, out var info)
+            ? info.Name
+            : storeCode;
+    }
+
+    public static string? GetStorePhoneNumber(string storeCode)
+    {
+        return _storeMap.TryGetValue(storeCode, out var info)
+            ? info.Phone
+            : null;
     }
 }

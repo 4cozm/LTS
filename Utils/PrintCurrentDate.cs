@@ -11,4 +11,11 @@ public static class PrintCurrentDate
 
         return now.ToString("yyyy-MM-dd tt hh시 mm분 ss초", culture);
     }
+
+    public static string PrintDate(DateTime dateTime)
+    {
+        CultureInfo culture = new CultureInfo("ko-KR");
+        return dateTime.ToString("yyyy-MM-dd tt hh시 mm분 ss초", culture);
+    }
+
 }

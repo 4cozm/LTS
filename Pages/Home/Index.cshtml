@@ -5,6 +5,7 @@
 }
 @* 네비게이션 바는 _Layout.cshtml에 있음 *@
 <link rel="stylesheet" href="~/css/button.css" />
+<link rel="stylesheet" href="~/css/modal.css" />
 
 <div id="server-status"
     style="position: fixed; top: 10px; right: 10px; font-size: 0.9rem; color: white; background: gray; padding: 5px 10px; border-radius: 5px;">
@@ -37,17 +38,66 @@
                     <td>
                         @if (c.IsAgreed)
                         {
-                            <button class="btn btn-success">결제 완료</button>
+                            <button class="btn btn-success show-confirm-modal" data-phone="@c.FormattedPhoneNumber"
+                                data-action="paid">결제 완료</button>
                         }
                         else
                         {
-                            <button class="btn btn-warning">대기중</button>
+                            <button class="btn btn-warning show-confirm-modal" data-phone="@c.FormattedPhoneNumber"
+                                data-action="delete">대기중</button>
                         }
                     </td>
                 </tr>
             }
         </tbody>
     </table>
+</div>
+
+<form id="confirmForm" method="post">
+    <input type="hidden" name="phoneNumber" id="modalPhoneInput" />
+    <input type="hidden" name="product" id="hiddenProduct" />
+    <input type="hidden" name="receipt" id="hiddenReceipt" />
+</form>
+
+<div class="card" id="purchaseModal" style="display: none;">
+    <div class="card-content">
+        <p class="card-heading">결제 정보 입력</p>
+        <p class="card-description">반드시 결제후 입력해 주세요</p>
+
+        <div class="form-group">
+            <label for="productSelect">구매 상품</label>
+            <select id="productSelect" name="product" class="form-control">
+                <option value="">선택하세요</option>
+                <option value="bronze">브론즈권 (10게임 / 55,000원)</option>
+                <option value="silver">실버권 (20게임 / 100,000원)</option>
+                <option value="gold">골드권 (30게임 / 135,000원)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="receiptInput">영수증 번호</label>
+            <input type="text" id="receiptInput" name="receipt" class="form-control" />
+        </div>
+    </div>
+
+    <div class="card-button-wrapper">
+        <button type="button" class="card-button secondary" id="cancelPurchaseBtn">취소</button>
+        <button type="button" class="card-button primary" id="confirmPurchaseBtn">확인</button>
+    </div>
+</div>
+
+<div id="modalOverlay" style="display: none;"></div>
+<div class="card" id="customModal" style="display: none;">
+
+    <div class="card-content">
+        <p class="card-heading" id="modalTitle">정보 삭제</p>
+        <p class="card-description" id="modalDescription">고객 정보를 삭제하면 처음부터 인증 받아야 합니다.인증은 24시간이 지나면 자동으로 삭제 됩니다. </p>
+    </div>
+    <div class="card-button-wrapper">
+        <button type="button" class="card-button secondary" id="cancelBtn">취소</button>
+        <button type="button" class="card-button primary" id="confirmBtn">확인</button>
+    </div>
+    <button class="exit-button" id="closeModalBtn">…</button>
 </div>
 
 @* 서버 상태 표시기 *@
@@ -111,4 +161,59 @@
         phoneNumber = phoneNumber.replace(/[^0-9]/g, '');
         alert(`${phoneNumber}로 동의했으나,번호 인증 목록에 해당 고객이 없습니다`);
     })
+
+    // 모달 관련 로직
+    const form = document.getElementById('confirmForm');
+    const phoneInput = document.getElementById('modalPhoneInput');
+    const productInput = document.getElementById('hiddenProduct');
+    const receiptInput = document.getElementById('hiddenReceipt');
+
+    document.querySelectorAll('.show-confirm-modal').forEach(button => {
+        button.addEventListener('click', () => {
+            const phone = button.dataset.phone;
+            phoneInput.value = phone;
+
+            if (button.classList.contains('btn-warning')) {
+                form.setAttribute('action', '?handler=DeleteCustomer');
+                document.getElementById('modalOverlay').style.display = 'block';
+                document.getElementById('customModal').style.display = 'block';
+            } else if (button.classList.contains('btn-success')) {
+                form.setAttribute('action', '?handler=CompletePayment');
+                document.getElementById('purchaseModal').style.display = 'block';
+                document.getElementById('modalOverlay').style.display = 'block';
+            }
+        });
+    });
+
+    // 삭제용 모달
+    document.getElementById('confirmBtn').addEventListener('click', () => {
+        form.submit();
+    });
+    document.getElementById('cancelBtn').addEventListener('click', () => {
+        document.getElementById('customModal').style.display = 'none';
+        document.getElementById('modalOverlay').style.display = 'none';
+    });
+    document.getElementById('closeModalBtn').addEventListener('click', () => {
+        document.getElementById('customModal').style.display = 'none';
+    });
+
+    // 결제입력 모달
+    document.getElementById('confirmPurchaseBtn').addEventListener('click', () => {
+        const product = document.getElementById('productSelect').value;
+        const receipt = document.getElementById('receiptInput').value;
+
+        if (!product || !receipt) {
+            alert("상품과 영수증 번호를 모두 입력해 주세요.");
+            return;
+        }
+
+        productInput.value = product;
+        receiptInput.value = receipt;
+        form.submit();
+    });
+    document.getElementById('cancelPurchaseBtn').addEventListener('click', () => {
+        document.getElementById('purchaseModal').style.display = 'none';
+        document.getElementById('modalOverlay').style.display = 'none';
+    });
+
 </script>
