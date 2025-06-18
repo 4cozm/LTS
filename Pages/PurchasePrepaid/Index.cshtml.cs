@@ -7,10 +7,11 @@ using System.Text.Json;
 using LTS.Models;
 using CommsProto;
 using LTS.Utils;
+using Mysqlx;
 
 namespace LTS.Pages.PurchasePrepaid
 {
-    public class IndexModel(RedisService redis,SendProtoMessage sender) : PageModel
+    public class IndexModel(RedisService redis, SendProtoMessage sender) : PageModel
     {
 
         [BindProperty]
@@ -23,7 +24,7 @@ namespace LTS.Pages.PurchasePrepaid
 
         public bool IsCodeSent => HttpContext.Session.GetString("VerificationCodeSent") == "true";
 
-        public IActionResult OnPostSendCode()
+        public async Task<IActionResult> OnPostSendCodeAsync()
         {
             if (!ModelState.IsValid)
                 return Page();
@@ -46,7 +47,20 @@ namespace LTS.Pages.PurchasePrepaid
             HttpContext.Session.SetString("VerificationCodeExpires", DateTime.UtcNow.AddMinutes(3).ToString());
             HttpContext.Session.SetString("VerificationCodeSent", "true");
             Console.WriteLine("인증코드" + code);
-            // 실제 인증번호 발송 API 호출 부분 생략
+
+            var VerificationCodeEnvelope = new Envelope
+            {
+                KakaoAlert = new SendKakaoAlertNotification
+                {
+                    TemplateTitle = "인증번호",
+                    Receiver = PhoneNumber,
+                    Variables =
+                    {
+                        { "인증번호", code ?? "" },
+                    }
+                }
+            };
+            await sender.SendMessageAsync(VerificationCodeEnvelope);
 
             TempData["Message"] = "인증번호가 발송되었습니다. 3분 내에 입력해주세요.";
             return RedirectToPage();
@@ -87,6 +101,7 @@ namespace LTS.Pages.PurchasePrepaid
             {
                 CurrentEmployee = employeeObj as Employee;
             }
+
             var authEnvelope = new Envelope
             {
                 KakaoAlert = new SendKakaoAlertNotification
@@ -95,7 +110,7 @@ namespace LTS.Pages.PurchasePrepaid
                     Receiver = PhoneNumber,
                     Variables =
                     {
-                        { "매장명", "구매 매장:"+CurrentEmployee!.Store ?? "" },
+                        { "매장명", "구매 매장:"+StoreService.GetStoreDisplayName(CurrentEmployee!.Store!) ?? "" },
                         { "일시",  PrintCurrentDate.PrintDate() ?? "" },
                     }
                 }
