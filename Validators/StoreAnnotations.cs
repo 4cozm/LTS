@@ -11,9 +11,9 @@ namespace LTS.Validators
                 return new ValidationResult("매장을 선택해 주세요");
             }
 
-            if (Services.StoreService.IsValidStoreName(storeName))
+            if (StoreService.IsValidStoreName(storeName))
             {
-                if (Services.StoreService.IsValidStoreName(storeName))
+                if (StoreService.IsValidStoreName(storeName))
                 {
                     return ValidationResult.Success;
                 }

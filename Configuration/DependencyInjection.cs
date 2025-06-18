@@ -10,6 +10,7 @@ public static class DependencyInjection
     public static IServiceCollection AddLtsCoreServices(this IServiceCollection services)
     {
         services.AddScoped<EmployeeRepository>();
+        services.AddScoped<PrepaidCardRepository>();
         services.AddScoped<LoginService>();
         services.AddSingleton<SessionStore>();
         // TODO: Add more core services (예: 회원가입, 근무조회 등)
