@@ -7,11 +7,12 @@ using System.Text.Json;
 using LTS.Models;
 using CommsProto;
 using LTS.Utils;
+using LTS.Base;
 
 
 namespace LTS.Pages.PurchasePrepaid
 {
-    public class IndexModel(RedisService redis, SendProtoMessage sender) : PageModel
+    public class IndexModel(RedisService redis, SendProtoMessage sender) : BasePageModel
     {
 
         [BindProperty]
