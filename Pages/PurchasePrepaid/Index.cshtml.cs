@@ -1,12 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using System.ComponentModel.DataAnnotations;
+using LTS.Utils;
 using LTS.Services;
 using System.Text.RegularExpressions;
 using System.Text.Json;
 using LTS.Models;
 using CommsProto;
-using LTS.Utils;
 using LTS.Base;
 
 
@@ -16,7 +14,6 @@ namespace LTS.Pages.PurchasePrepaid
     {
 
         [BindProperty]
-        [Required(ErrorMessage = "전화번호를 입력해주세요.")]
         public string? PhoneNumber { get; set; }
 
         [BindProperty]
@@ -42,7 +39,7 @@ namespace LTS.Pages.PurchasePrepaid
                 return Page();
             }
 
-            string code = GenerateVerificationCode();
+            string code = GenerateCodeUtils.GenerateVerificationCode();
             HttpContext.Session.SetString("PhoneNumber", PhoneNumber!);
             HttpContext.Session.SetString("VerificationCode", code);
             HttpContext.Session.SetString("VerificationCodeExpires", DateTime.UtcNow.AddMinutes(3).ToString());
@@ -67,13 +64,12 @@ namespace LTS.Pages.PurchasePrepaid
             return RedirectToPage();
         }
 
-        public async Task<IActionResult> OnPostVerifyAsync()
+        public async Task<IActionResult> OnPostVerifyAsync(string action)
         {
             var storedCode = HttpContext.Session.GetString("VerificationCode");
             var expiresRaw = HttpContext.Session.GetString("VerificationCodeExpires");
             var PhoneNumber = HttpContext.Session.GetString("PhoneNumber");
 
-            var action = Request.Form["action"];
             if (action == "reset")
             {
                 ClearVerificationSession();
@@ -134,12 +130,6 @@ namespace LTS.Pages.PurchasePrepaid
         }
 
 
-        private static string GenerateVerificationCode(int length = 6)
-        {
-            const string digits = "0123456789";
-            var rand = new Random();
-            return new string(Enumerable.Range(0, length).Select(_ => digits[rand.Next(digits.Length)]).ToArray());
-        }
         private void ClearVerificationSession()
         {
             var session = HttpContext.Session;

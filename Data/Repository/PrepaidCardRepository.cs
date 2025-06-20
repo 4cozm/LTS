@@ -113,4 +113,35 @@ public class PrepaidCardRepository
             throw new InvalidOperationException("사용 기록 중 알 수 없는 오류가 발생했습니다.", ex);
         }
     }
+    
+    //DB에서 활성화 된 카드만 가져옴
+    public List<PrepaidCard> GetPrepaidCardByPhoneNumber(string phoneNumber)
+    {
+        try
+        {
+            using var conn = DbManager.GetConnection();
+            if (conn == null) return new List<PrepaidCard>();
+
+            string query = @"
+            SELECT id AS Id, code AS Code, type AS Type,
+                   initial_value AS InitialValue, remaining_value AS RemainingValue,
+                   issued_at AS IssuedAt, expires_at AS ExpiresAt,
+                   is_active AS IsActive, purchaser_name AS PurchaserName,
+                   purchaser_contact AS PurchaserContact, notes AS Notes,
+                   store_code AS StoreCode
+            FROM prepaid_cards
+            WHERE purchaser_contact = @PhoneNumber
+              AND is_active = TRUE
+            ORDER BY issued_at DESC";
+
+            return conn.Query<PrepaidCard>(query, new { PhoneNumber = phoneNumber }).ToList();
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"[조회 오류] {ex.Message}");
+            throw new InvalidOperationException("선불권 목록 조회 중 오류가 발생했습니다.", ex);
+        }
+    }
+
 }
+
