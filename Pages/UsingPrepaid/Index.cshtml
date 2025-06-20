@@ -1,0 +1,186 @@
+@page
+@using System.Text.Json
+@model LTS.Pages.UsingPrepaid.IndexModel
+@{
+    ViewData["Title"] = "선불권 사용 인증";
+}
+<link rel="stylesheet" href="~/css/errorAlert.css" />
+
+<div class="container mt-5" style="max-width: 480px;">
+    <h2>@ViewData["Title"]</h2>
+
+    @if (TempData["Message"] is string msg)
+    {
+        <div class="alert alert-info">@msg</div>
+    }
+
+    @* 인증번호 에러 시 시각적 알림 *@
+    @{
+        var codeState = ModelState.ContainsKey("VerificationCode") ? ModelState["VerificationCode"] : null;
+        var codeError = codeState?.Errors.FirstOrDefault()?.ErrorMessage;
+    }
+    @if (!string.IsNullOrEmpty(codeError))
+    {
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                showNotification(@Html.Raw(JsonSerializer.Serialize(codeError)));
+            });
+        </script>
+    }
+    @if (Model.Cards?.Any() == true)
+    {
+        <div class="container mt-5">
+            <h2 class="mb-4">해당 고객의 선불권 목록</h2>
+
+            <table class="table table-striped table-hover align-middle text-center">
+                <thead class="table-dark">
+                    <tr>
+                        <th>고객명</th>
+                        <th>전화번호</th>
+                        <th>초기 개수</th>
+                        <th>남은 개수</th>
+                        <th>만료일</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var c in Model.Cards)
+                    {
+                        <tr>
+                            <td>@c.PurchaserName</td>
+                            <td>@c.FormattedPhoneNumber</td>
+                            <td>@c.InitialValue</td>
+                            <td>@c.RemainingValue</td>
+                            <td>@(c.ExpiresAt?.ToString("yyyy-MM-dd") ?? "-")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
+
+    @* --- [1단계] 전화번호 입력 --- *@
+    <form method="post" asp-page-handler="SendCode">
+        <div class="mb-3">
+            <label asp-for="PhoneNumber" class="form-label">휴대폰 번호 입력 ("-" 없이)</label>
+            <div class="input-group">
+                <input asp-for="PhoneNumber" class="form-control" placeholder="-없이 입력하세요" />
+                <button type="submit" class="btn btn-primary">인증번호 발송</button>
+            </div>
+            <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+        </div>
+    </form>
+    <script>
+        localStorage.removeItem("verification_timer_start");
+    </script>
+
+    @* --- [2단계] 인증번호 입력 --- *@
+    @if (Model.IsCodeSent)
+    {
+        <form method="post" asp-page-handler="Verify">
+            <div class="mb-3">
+                <label asp-for="VerificationCode" class="form-label">인증번호 입력</label>
+                <div class="input-group">
+                    <input asp-for="VerificationCode" id="verification-code-input" class="form-control" maxlength="6"
+                        placeholder="6자리 숫자" />
+                    <span id="timerText" class="input-group-text">3분 이내</span>
+                </div>
+                <span asp-validation-for="VerificationCode" class="d-none"></span>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" name="action" id="submitBtn" value="verify" class="btn btn-success">확인</button>
+                <button type="submit" id="resetBtn" name="action" value="reset" class="btn btn-secondary">초기화</button>
+            </div>
+        </form>
+    }
+
+    @* --- 에러 알림창 UI --- *@
+    <ul class="notification-container" id="notificationBar">
+        <li class="notification-item error">
+            <div class="notification-content">
+                <div class="notification-icon">
+                    <svg aria-hidden="true" fill="none" viewBox="0 0 24 24">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="m15 9-6 6m0-6 6 6m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"></path>
+                    </svg>
+                </div>
+                <div class="notification-text" id="notificationMessage">에러</div>
+            </div>
+            <div class="notification-icon notification-close">
+                <svg aria-hidden="true" fill="none" viewBox="0 0 24 24">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M6 18 17.94 6M18 18 6.06 6"></path>
+                </svg>
+            </div>
+            <div class="notification-progress-bar"></div>
+        </li>
+    </ul>
+</div>
+
+@* --- JS 타이머 및 알림 관련 스크립트 --- *@
+<script>
+    const DURATION = 180; // 3분
+    const TIMER_KEY = 'verification_timer_start';
+    const timerText = document.getElementById('timerText');
+    let timerInterval;
+
+    function getRemainingTime() {
+        const startedAt = localStorage.getItem(TIMER_KEY);
+        if (!startedAt) return DURATION;
+        const elapsed = Math.floor((Date.now() - parseInt(startedAt)) / 1000);
+        return Math.max(0, DURATION - elapsed);
+    }
+
+    function setInitialTimerText() {
+        const remaining = getRemainingTime();
+        const minutes = Math.floor(remaining / 60);
+        const seconds = remaining % 60;
+        timerText.textContent = `${minutes}:${seconds.toString().padStart(2, '0')} 남음`;
+    }
+
+    function startTimer() {
+        let secondsRemaining = getRemainingTime();
+
+        timerInterval = setInterval(() => {
+            const minutes = Math.floor(secondsRemaining / 60);
+            const seconds = secondsRemaining % 60;
+            timerText.textContent = `${minutes}:${seconds.toString().padStart(2, '0')} 남음`;
+
+            if (secondsRemaining <= 0) {
+                clearInterval(timerInterval);
+                localStorage.removeItem(TIMER_KEY);
+                timerText.textContent = '만료됨';
+                document.querySelector("#verification-code-input").disabled = true;
+                document.querySelector("#submitBtn").disabled = true;
+                alert("인증이 만료되었습니다. 초기화 버튼을 눌러 처음부터 다시 시작해 주세요");
+            } else {
+                secondsRemaining--;
+            }
+        }, 1000);
+    }
+
+    resetBtn?.addEventListener('click', function () {
+        localStorage.removeItem(TIMER_KEY);
+        clearInterval(timerInterval);
+    });
+
+    if (!localStorage.getItem(TIMER_KEY)) {
+        localStorage.setItem(TIMER_KEY, Date.now().toString());
+    }
+    setInitialTimerText();
+    startTimer();
+
+    function showNotification(message) {
+        const bar = document.getElementById('notificationBar');
+        const text = document.getElementById('notificationMessage');
+        bar.addEventListener("click", () => {
+            bar.style.display = "none";
+        });
+        text.textContent = message;
+        bar.style.display = 'flex';
+        setTimeout(() => {
+            bar.style.display = 'none';
+        }, 5000);
+    }
+</script>
