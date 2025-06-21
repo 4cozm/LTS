@@ -113,7 +113,7 @@ namespace LTS.Pages.Home
                     ExpiresAt = issuedAt.AddMonths(6),
                     IsActive = true,
                     PurchaserName = consentData.Name,
-                    PurchaserContact = phoneNumber,
+                    PurchaserContact = digitsOnly,
                     StoreCode = consentData.StoreCode,
                     Notes = $"영수증: {receipt} | 발송: {consentData.SentAt:yyyy-MM-dd HH:mm} | " +
                         $"동의: {consentData.AgreedAt:yyyy-MM-dd HH:mm} | 버전: {consentData.TermVersion} | " +
@@ -136,7 +136,7 @@ namespace LTS.Pages.Home
                     KakaoAlert = new SendKakaoAlertNotification
                     {
                         TemplateTitle = "선불권 구매 알림",
-                        Receiver = phoneNumber,
+                        Receiver = digitsOnly,
                         Variables =
                     {
                         {"고객명",consentData.Name},
