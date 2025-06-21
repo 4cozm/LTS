@@ -7,4 +7,5 @@ public class PrepaidCardViewModel
     public int InitialValue { get; set; }
     public int RemainingValue { get; set; }
     public DateTime? ExpiresAt { get; set; }
+    public string? Code { get; set; }
 }
