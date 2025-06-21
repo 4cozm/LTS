@@ -102,12 +102,12 @@ namespace LTS.Pages.Register
 
                 var newEmployee = new Employee
                 {
-                    Name = Name,
-                    PhoneNumber = PhoneNumber,
-                    Initials = Initial,
+                    Name = Name!,
+                    PhoneNumber = PhoneNumber!,
+                    Initials = Initial!,
                     Password = hashedPassword,
-                    Store = StoreName,
-                    RoleName = RoleName,
+                    Store = StoreName!,
+                    RoleName = RoleName!,
                     WorkStartDate = EffectiveDate ?? DateTime.Today,
                     CreatedAt = DateTime.UtcNow,
                     CreatedByMember = employee.Name
