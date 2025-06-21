@@ -1,108 +1,96 @@
--- When adding or modifying schema, also update the Dapper model in the Models directory.
 USE lts_core;
 
--- User information table
+-- User account table
 CREATE TABLE users (
-    id INT AUTO_INCREMENT PRIMARY KEY,             -- Unique user ID
-    password VARCHAR(255) NOT NULL,                -- Encrypted password
-    name VARCHAR(50),                              -- User name
-    phone VARCHAR(20),                             -- Phone number
-    address TEXT,                                  -- Address
-    joined_at DATETIME DEFAULT CURRENT_TIMESTAMP,  -- Join date
-    is_active BOOLEAN DEFAULT TRUE,                -- Account active status
-    last_login DATETIME,                           -- Last login timestamp
-    dirty_flag BOOLEAN DEFAULT FALSE               -- Dirty flag for sync/cache purposes
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    password VARCHAR(255) NOT NULL,                -- Hashed password
+    name VARCHAR(50),                              -- Full name
+    phone VARCHAR(20),                             -- Mobile number
+    address TEXT,                                  -- User address
+    joined_at DATETIME DEFAULT CURRENT_TIMESTAMP,  -- Registration timestamp
+    is_active BOOLEAN DEFAULT TRUE,                -- Account status
+    last_login DATETIME,                           -- Last login time
+    dirty_flag BOOLEAN DEFAULT FALSE               -- For sync/cache tracking
 );
 
--- Coupon definition table
+-- Coupon master table
 CREATE TABLE coupons (
-    id INT AUTO_INCREMENT PRIMARY KEY,             -- Coupon ID
+    id INT AUTO_INCREMENT PRIMARY KEY,
     code VARCHAR(50) NOT NULL UNIQUE,              -- Unique coupon code
-    description TEXT,                              -- Description
+    description TEXT,                              -- Description of the coupon
     discount_type ENUM('PERCENT', 'FIXED') NOT NULL, -- Discount type
-    discount_value DECIMAL(10,2) NOT NULL,         -- Discount amount or percentage
-    min_order_amount DECIMAL(10,2),                -- Minimum order amount
-    valid_days INT NOT NULL DEFAULT 30,            -- Validity in days from issue date
-    is_active BOOLEAN DEFAULT TRUE                 -- Coupon active status
+    discount_value DECIMAL(5,2) NOT NULL,          -- Discount amount or percentage
+    min_order_amount DECIMAL(10,2),                -- Minimum order value required
+    valid_days INT NOT NULL DEFAULT 30,            -- Validity period in days
+    is_active BOOLEAN DEFAULT TRUE                 -- Active or inactive
 );
 
--- User coupon assignment table
+-- Coupon assignment to users
 CREATE TABLE user_coupons (
-    id INT AUTO_INCREMENT PRIMARY KEY,             -- Assigned coupon ID
-    user_id INT NOT NULL,                          -- Reference to users table
-    coupon_id INT NOT NULL,                        -- Reference to coupons table
-    assigned_at DATETIME DEFAULT CURRENT_TIMESTAMP, -- Assignment time
-    expires_at DATETIME NOT NULL,                  -- Expiration date
-    used_at DATETIME,                              -- Used time (NULL = unused)
-    is_used BOOLEAN DEFAULT FALSE,                 -- Usage status
-    dirty_flag BOOLEAN DEFAULT FALSE,              -- Dirty flag
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    coupon_id INT NOT NULL,
+    assigned_at DATETIME DEFAULT CURRENT_TIMESTAMP, -- Time of assignment
+    expires_at DATETIME NOT NULL,                  -- Expiration timestamp
+    used_at DATETIME,                              -- Time of usage
+    is_used BOOLEAN DEFAULT FALSE,                 -- Used or not
+    dirty_flag BOOLEAN DEFAULT FALSE,
 
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (coupon_id) REFERENCES coupons(id) ON DELETE CASCADE,
-
-    UNIQUE(user_id, coupon_id)                     -- Prevent duplicate assignments
+    UNIQUE(user_id, coupon_id)
 );
 
--- Coupon usage history table
+-- Coupon usage logs
 CREATE TABLE coupon_usages (
-    id INT AUTO_INCREMENT PRIMARY KEY,             -- Log ID
-    user_coupon_id INT NOT NULL,                   -- Reference to user_coupons
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_coupon_id INT NOT NULL,
     action_type ENUM('USE', 'CANCEL', 'RESTORE', 'TEST') NOT NULL DEFAULT 'USE',
-    -- 'USE': actual usage
-    -- 'CANCEL': usage cancelled
-    -- 'RESTORE': restored
-    -- 'TEST': test or mock usage
-
-    used_at DATETIME DEFAULT CURRENT_TIMESTAMP,    -- Usage time
-    note TEXT,                                     -- Usage notes
+    used_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    note TEXT,
 
     FOREIGN KEY (user_coupon_id) REFERENCES user_coupons(id) ON DELETE CASCADE
 );
 
--- Prepaid card issuance
+-- Prepaid card definition
 CREATE TABLE prepaid_cards (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    code VARCHAR(50) NOT NULL UNIQUE,              -- Unique code for user entry
-    type ENUM('AMOUNT', 'COUNT') NOT NULL,         -- Type: amount-based or count-based
-    initial_value DECIMAL(10,2) NOT NULL,          -- Initial value
-    remaining_value DECIMAL(10,2) NOT NULL,        -- Remaining value
-    issued_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    expires_at DATETIME,                           -- Optional expiration date
-    is_active BOOLEAN DEFAULT TRUE,                -- Active/block status
-    purchaser_name VARCHAR(100),                   -- Purchaser name
-    purchaser_contact VARCHAR(50),                 -- Email or phone
-    notes TEXT,                                    -- Notes or memo
-    store_code VARCHAR(20)                         -- Store identifier
+    code VARCHAR(50) NOT NULL UNIQUE,              -- Unique code for entry
+    type ENUM('AMOUNT', 'COUNT') NOT NULL,         -- Type of the card
+    initial_value DECIMAL(10,2) NOT NULL,          -- Initial amount or count
+    remaining_value DECIMAL(10,2) NOT NULL,        -- Remaining balance or count
+    issued_at DATETIME DEFAULT CURRENT_TIMESTAMP,  -- Issue timestamp
+    expires_at DATETIME NOT NULL,                  -- expiration date
+    is_active BOOLEAN DEFAULT TRUE,                -- Active or inactive
+    purchaser_name VARCHAR(100) NOT NULL,          -- Buyer name
+    purchaser_contact VARCHAR(50) NOT NULL,        -- Buyer phone
+    notes TEXT,                                    -- Optional notes
+    store_code VARCHAR(20) NOT NULL                -- Associated store
 );
 
--- Prepaid card usage and history
+-- Prepaid card usage history
 CREATE TABLE prepaid_card_usages (
-    id INT AUTO_INCREMENT PRIMARY KEY,             -- Log ID
-    prepaid_card_id INT NOT NULL,                  -- Reference to prepaid_cards
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    prepaid_card_id INT NOT NULL,
     action_type ENUM('USE', 'RESTORE', 'ADJUST', 'TEST') NOT NULL DEFAULT 'USE',
-    -- 'USE': usage
-    -- 'RESTORE': refund or restore
-    -- 'ADJUST': admin adjustment
-    -- 'TEST': test entry
-
-    change_amount DECIMAL(10,2) NOT NULL,          -- Change in amount (positive = use, negative = restore)
-    usage_note TEXT,                               -- Usage memo
-    used_at DATETIME DEFAULT CURRENT_TIMESTAMP,    -- Timestamp
+    change_amount DECIMAL(10,2) NOT NULL,          -- Amount or count used
+    usage_note TEXT,                               -- Optional comment
+    used_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 
     FOREIGN KEY (prepaid_card_id) REFERENCES prepaid_cards(id) ON DELETE CASCADE
 );
 
--- Employee table
+-- Employee account table
 CREATE TABLE employees (
-    id INT AUTO_INCREMENT PRIMARY KEY,             -- Unique ID
-    initials VARCHAR(10) NOT NULL UNIQUE,          -- Initials (e.g., AHG)
-    name VARCHAR(255) NOT NULL,                    -- Name
-    phone_number VARCHAR(20) NOT NULL,             -- Phone number
-    password VARCHAR(255) NOT NULL,                -- Password
-    is_password_changed BOOLEAN DEFAULT FALSE,     -- Whether initial password was changed
-    store VARCHAR(50) NOT NULL,                    -- Store name or ID
-    role_name VARCHAR(50) NOT NULL,                -- Role (staff, manager, owner)
-    work_start_date DATE NOT NULL,                 -- Work start date
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,-- Creation timestamp
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    initials VARCHAR(10) NOT NULL UNIQUE,          -- Short initials (e.g., JSM)
+    name VARCHAR(255) NOT NULL,                    -- Full name
+    phone_number VARCHAR(20) NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    is_password_changed BOOLEAN DEFAULT FALSE,     -- Whether password was updated
+    store VARCHAR(50) NOT NULL,                    -- Store code
+    role_name VARCHAR(50) NOT NULL,                -- Role (e.g., manager)
+    work_start_date DATE NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     created_by_member VARCHAR(20)                  -- Creator identifier
 );
