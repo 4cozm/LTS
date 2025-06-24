@@ -5,5 +5,6 @@ public class PrepaidCardUsage
     public string ActionType { get; set; } = "USE";
     public decimal ChangeAmount { get; set; }
     public string? UsageNote { get; set; }
+    public string? StoreCode { get; set; }
     public DateTime UsedAt { get; set; }
 }

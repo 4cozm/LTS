@@ -60,9 +60,9 @@ public class PrepaidCardRepository
             // usage 기록 추가
             string usageQuery = @"
             INSERT INTO prepaid_card_usages 
-                (prepaid_card_id, action_type, change_amount, usage_note, used_at)
+                (prepaid_card_id, action_type, change_amount, usage_note, store_code, used_at)
             VALUES 
-                (@PrepaidCardId, @ActionType, @ChangeAmount, @UsageNote, @UsedAt);";
+                (@PrepaidCardId, @ActionType, @ChangeAmount, @UsageNote, @StoreCode, @UsedAt);";
 
             usage.PrepaidCardId = newCardId;
             conn.Execute(usageQuery, usage, tx);
@@ -93,9 +93,9 @@ public class PrepaidCardRepository
 
             string query = @"
                 INSERT INTO prepaid_card_usages 
-                    (prepaid_card_id, action_type, change_amount, usage_note, used_at)
+                    (prepaid_card_id, action_type, change_amount, usage_note, store_code, used_at)
                 VALUES 
-                    (@PrepaidCardId, @ActionType, @ChangeAmount, @UsageNote, @UsedAt)";
+                    (@PrepaidCardId, @ActionType, @ChangeAmount, @UsageNote, @StoreCode, @UsedAt)";
 
             int result = conn.Execute(query, usage);
 
@@ -214,9 +214,9 @@ public class PrepaidCardRepository
             usage.PrepaidCardId = card.Id;
             string insertLogQuery = @"
             INSERT INTO prepaid_card_usages
-                (prepaid_card_id, action_type, change_amount, usage_note, used_at)
+                (prepaid_card_id, action_type, change_amount, usage_note, store_code, used_at)
             VALUES
-                (@PrepaidCardId, @ActionType, @ChangeAmount, @UsageNote, @UsedAt)";
+                (@PrepaidCardId, @ActionType, @ChangeAmount, @UsageNote, @StoreCode, @UsedAt)";
 
             conn.Execute(insertLogQuery, usage, tx);
 
@@ -227,6 +227,34 @@ public class PrepaidCardRepository
         {
             Console.Error.WriteLine($"[선불권 사용 오류] {ex.Message}");
             throw new InvalidOperationException("선불권 사용 처리 중 오류가 발생했습니다.", ex);
+        }
+    }
+
+
+    public List<PrepaidCardUsage> GetPrepaidUsagesInLast24Hours(string storeCode)
+    {
+        try
+        {
+            using var conn = DbManager.GetConnection();
+            if (conn == null)
+                throw new InvalidOperationException("DB 연결에 실패했습니다.");
+
+            string selectQuery = @"
+            SELECT *
+            FROM prepaid_card_usages
+            WHERE store_code = @StoreCode
+              AND used_at >= NOW() - INTERVAL 1 DAY
+              AND action_type IN ('USE', 'RESTORE', 'ADJUST')
+            ORDER BY used_at DESC
+        ";
+
+            var result = conn.Query<PrepaidCardUsage>(selectQuery, new { StoreCode = storeCode });
+            return result.ToList();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"[오류] 선불권 사용 이력 조회 실패: {e.Message}");
+            return new();
         }
     }
 

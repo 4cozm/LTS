@@ -76,6 +76,7 @@ CREATE TABLE prepaid_card_usages (
     change_amount DECIMAL(10,2) NOT NULL,          -- Amount or count used
     usage_note TEXT,                               -- Optional comment
     used_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    store_code VARCHAR(20) NOT NULL,
 
     FOREIGN KEY (prepaid_card_id) REFERENCES prepaid_cards(id) ON DELETE CASCADE
 );

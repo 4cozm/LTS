@@ -198,6 +198,7 @@ namespace LTS.Pages.UsingPrepaid
                 ActionType = "USE",
                 ChangeAmount = UseAmount.Value,
                 UsageNote = $"사용 승인 직원:{CurrentEmployee.Name}",
+                StoreCode = CurrentEmployee.Store,
                 UsedAt = DateTime.UtcNow
             };
 

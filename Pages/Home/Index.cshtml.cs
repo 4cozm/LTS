@@ -125,6 +125,7 @@ namespace LTS.Pages.Home
                     ActionType = "TEST", // 초기 등록
                     ChangeAmount = 0,
                     UsageNote = "초기 구매 자동 등록",
+                    StoreCode = consentData.StoreCode,
                     UsedAt = DateTime.UtcNow
                 });
 
