@@ -6,7 +6,6 @@ using LTS.Utils;
 using CommsProto;
 using LTS.Models;
 using LTS.Data.Repository;
-using System.Text.Json;
 
 namespace LTS.Pages.UsingPrepaid
 {
@@ -128,7 +127,7 @@ namespace LTS.Pages.UsingPrepaid
                     }
                     }
                 };
-                // await sender.SendMessageAsync(VerificationCodeEnvelope);
+                await sender.SendMessageAsync(VerificationCodeEnvelope);
 
                 TempData["Message"] = $"{UseAmount.Value}개의 선불권을 사용합니다. 고객의 휴대전화로 인증번호가 발송되었습니다.";
                 return RedirectToPage();
@@ -142,7 +141,7 @@ namespace LTS.Pages.UsingPrepaid
         }
 
         // 인증번호 확인
-        public IActionResult OnPostVerify(string action)
+        public async Task<IActionResult> OnPostVerifyAsync(string action)
         {
             var storedCode = HttpContext.Session.GetString("VerificationCode");
             var expiresRaw = HttpContext.Session.GetString("VerificationCodeExpires");
@@ -198,28 +197,29 @@ namespace LTS.Pages.UsingPrepaid
             {
                 ActionType = "USE",
                 ChangeAmount = UseAmount.Value,
-                UsageNote = $"결제 승인 직원:{CurrentEmployee.Name}",
+                UsageNote = $"사용 승인 직원:{CurrentEmployee.Name}",
                 UsedAt = DateTime.UtcNow
             };
 
             var updatedCard = cardRepo.UsePrepaidCardByCode(PrepaidCardCode, UseAmount.Value, usage);
-            // 카카오 승인 대기중
-            // var PrepaidEnvelope = new Envelope
-            // {
-            //     KakaoAlert = new SendKakaoAlertNotification
-            //     {
-            //         TemplateTitle = "선불권 구매 알림",
-            //         Receiver = PhoneNumber,
-            //         Variables =
-            //         {
-            //             {"고객명",updatedCard.PurchaserName},
-            //             {"사용개수",UseAmount.ToString()},
-            //             {"처리일시",PrintCurrentDate.PrintDate()},
-            //             {"매장전화번호",StoreService.GetStorePhoneNumber(CurrentEmployee.Store)}
-            //         }
-            //     }
-            // };
-            // await sender.SendMessageAsync(PrepaidEnvelope);
+
+            var PrepaidEnvelope = new Envelope
+            {
+                KakaoAlert = new SendKakaoAlertNotification
+                {
+                    TemplateTitle = "선불권 사용 안내",
+                    Receiver = PhoneNumber,
+                    Variables =
+                    {
+                        {"고객명",updatedCard.PurchaserName},
+                        {"사용개수",UseAmount.ToString()},
+                        {"잔여개수",updatedCard.RemainingValue.ToString("0")}, //decimal로 나오는걸 방지하기 위함
+                        {"처리일시",PrintCurrentDate.PrintDate()},
+                        {"매장전화번호",StoreService.GetStorePhoneNumber(CurrentEmployee.Store)}
+                    }
+                }
+            };
+            await sender.SendMessageAsync(PrepaidEnvelope);
 
             ClearVerificationSession();
             return NoticeService.RedirectWithNotice(HttpContext, $"{UseAmount.Value}개의 선불권 사용이 완료되었습니다.", "/Home");

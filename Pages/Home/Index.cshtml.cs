@@ -130,7 +130,6 @@ namespace LTS.Pages.Home
 
                 db.KeyDelete(redisKey);
 
-
                 var PrepaidEnvelope = new Envelope
                 {
                     KakaoAlert = new SendKakaoAlertNotification
