@@ -1,0 +1,190 @@
+@page
+@using System.Text.Json
+@model LTS.Pages.UsingPrepaid.IndexModel
+
+@{
+    ViewData["Title"] = "선불권 사용 인증";
+}
+
+<link rel="stylesheet" href="~/css/errorAlert.css" />
+<link rel="stylesheet" href="~/css/modal.css" />
+
+<div class="container mt-5" style="max-width: 480px;">
+    <h2>@ViewData["Title"]</h2>
+
+    @* 서버에서 보낸 메시지(인증번호 발송 완료 등) *@
+    @if (TempData["Message"] is string msg)
+    {
+        <div class="alert alert-info">@msg</div>
+    }
+
+    @* 인증번호 에러 알림 *@
+    @{
+        var codeState = ModelState.ContainsKey("VerificationCode")
+        ? ModelState["VerificationCode"]
+        : null;
+        var codeError = codeState?.Errors.FirstOrDefault()?.ErrorMessage;
+    }
+    @if (!string.IsNullOrEmpty(codeError))
+    {
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                showNotification(@Html.Raw(JsonSerializer.Serialize(codeError)));
+            });
+        </script>
+    }
+
+    @* 1 휴대폰 번호 입력 & 검색 폼 *@
+    @if (!Model.IsCodeSent)
+    {
+        <form method="post" asp-page-handler="SendCode">
+            <div class="mb-3">
+                <label asp-for="PhoneNumber" class="form-label">휴대폰 번호 입력 ("-" 없이)</label>
+                <div class="input-group">
+                    <input asp-for="PhoneNumber" class="form-control" placeholder="-없이 입력하세요" />
+                    <button type="submit" class="btn btn-primary">검색</button>
+                </div>
+                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+            </div>
+        </form>
+    }
+</div>
+
+@* 2 인증번호 입력 폼 *@
+@if (Model.IsCodeSent)
+{
+    <form method="post" asp-page-handler="Verify">
+        <div class="container mt-5" style="max-width: 480px;">
+            <div class="mb-3">
+                <label asp-for="VerificationCode" class="form-label">인증번호 입력</label>
+                <div class="input-group mb-2">
+                    <input asp-for="VerificationCode" class="form-control" placeholder="6자리" />
+                </div>
+                <span asp-validation-for="VerificationCode" class="text-danger"></span>
+                <div class="d-flex gap-2 justify-content-end">
+                    <button type="submit" class="btn btn-secondary" name="action" value="reset">초기화</button>
+                    <button type="submit" class="btn btn-primary" name="action" value="verify">확인</button>
+                </div>
+            </div>
+        </div>
+    </form>
+}
+
+
+@* 3 선불권 리스트 출력 *@
+@if (Model.Cards?.Any() == true)
+{
+    <div class="container mt-5">
+        <h2 class="mb-4">해당 고객의 선불권 목록</h2>
+        <div class="table-responsive">
+            <table class="table table-striped table-hover align-middle text-center">
+                <thead class="table-dark">
+                    <tr>
+                        <th>고객명</th>
+                        <th>전화번호</th>
+                        <th>초기 개수</th>
+                        <th>남은 개수</th>
+                        <th>만료일</th>
+                        <th>사용</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var c in Model.Cards)
+                    {
+                        <tr>
+                            <td>@c.PurchaserName</td>
+                            <td>@c.FormattedPhoneNumber</td>
+                            <td>@c.InitialValue</td>
+                            <td>@c.RemainingValue</td>
+                            <td>@(c.ExpiresAt?.ToString("yyyy-MM-dd") ?? "-")</td>
+                            <td>
+                                <button type="button" class="btn btn-sm btn-danger" data-code="@c.Code"
+                                    data-name="@c.PurchaserName" data-remaining="@c.RemainingValue"
+                                    onclick="openUseCardModal(this)">
+                                    사용
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+@* 4 선불권 사용 모달 *@
+<form id="useCardForm" method="post" asp-page-handler="RequestVerification">
+    <div class="card" id="purchaseModal" style="display: none;">
+        <div class="card-content">
+            <p class="card-heading">선불권 사용</p>
+            <p class="card-description"><span id="cardOwner"></span> 고객님의 선불권을 사용합니다.</p>
+
+            <input type="hidden" name="PrepaidCardCode" id="selectedCardCode" />
+
+            <div class="form-group">
+                <label for="useAmountInputDisplay" class="form-label">사용할 개수</label>
+                <input type="number" name="UseAmount" id="useAmountInputDisplay" class="form-control" min="1" max="1"
+                    value="1" />
+                <small id="maxHint" class="text-muted"></small>
+            </div>
+        </div>
+        <div class="card-button-wrapper">
+            <button type="button" class="card-button secondary" id="cancelUseCardBtn">취소</button>
+            <button type="submit" class="card-button primary">확인</button>
+        </div>
+    </div>
+</form>
+
+@* 5 에러/알림 UI *@
+<ul class="notification-container" id="notificationBar" style="display: none;">
+    <li class="notification-item error">
+        <div class="notification-content">
+            <div class="notification-icon">
+                <svg aria-hidden="true" fill="none" viewBox="0 0 24 24">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="m15 9-6 6m0-6 6 6m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                </svg>
+            </div>
+            <div class="notification-text" id="notificationMessage">에러</div>
+        </div>
+        <div class="notification-icon notification-close">
+            <svg aria-hidden="true" fill="none" viewBox="0 0 24 24">
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M6 18 17.94 6M18 18 6.06 6" />
+            </svg>
+        </div>
+        <div class="notification-progress-bar"></div>
+    </li>
+</ul>
+
+@* 6 스크립트 섹션 *@
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        window.openUseCardModal = function (button) {
+            const code = button.dataset.code;
+            const name = button.dataset.name;
+            const remaining = button.dataset.remaining;
+
+            const codeInput = document.getElementById('selectedCardCode');
+            const displayInput = document.getElementById('useAmountInputDisplay');
+
+            if (!codeInput || !displayInput) {
+                console.error('모달 요소가 없습니다.');
+                return;
+            }
+
+            codeInput.value = code;
+            displayInput.value = 1;
+            displayInput.min = 1;
+            displayInput.max = remaining;
+
+            document.getElementById('maxHint').textContent = `(최대 ${remaining}개까지 사용 가능)`;
+            document.getElementById('cardOwner').textContent = name;
+            document.getElementById('purchaseModal').style.display = 'block';
+        };
+
+        document.getElementById('cancelUseCardBtn')?.addEventListener('click', () => {
+            document.getElementById('purchaseModal').style.display = 'none';
+        });
+    });
+</script>

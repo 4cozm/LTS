@@ -1,5 +1,3 @@
-namespace LTS.Models;
-
 public class UserCoupon
 {
     public int Id { get; set; }
