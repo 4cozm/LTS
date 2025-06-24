@@ -4,3 +4,33 @@
 @{
     ViewData["Title"] = "↩️ 선불권 환불/취소";
 }
+<h2>@ViewData["Title"]</h2>
+<form method="post" asp-page-handler="SendCode">
+    <div class="mb-3">
+        <label asp-for="PhoneNumber" class="form-label">상세 기록 조회</label>
+        <div class="input-group">
+            <input asp-for="PhoneNumber" class="form-control" placeholder="-없이 입력하세요" />
+            <button type="submit" class="btn btn-primary">검색</button>
+        </div>
+        <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+    </div>
+</form>
+
+<div class="container mt-5">
+    <h2 class="mb-4">선불권 사용 기록 (24시간)</h2>
+
+    <table class="table table-striped table-hover align-middle text-center">
+        <thead class="table-dark">
+            <tr>
+                <th>고객명</th>
+                <th>전화번호</th>
+                <th>시각</th>
+                <th>상태</th>
+                <th>작업</th>
+            </tr>
+        </thead>
+        <tbody>
+
+        </tbody>
+    </table>
+</div>
