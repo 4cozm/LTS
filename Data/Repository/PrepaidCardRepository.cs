@@ -60,9 +60,9 @@ public class PrepaidCardRepository
             // usage 기록 추가
             string usageQuery = @"
             INSERT INTO prepaid_card_usages 
-                (prepaid_card_id, action_type, change_amount, usage_note, used_at)
+                (prepaid_card_id, action_type, change_amount, usage_note, store_code, used_at)
             VALUES 
-                (@PrepaidCardId, @ActionType, @ChangeAmount, @UsageNote, @UsedAt);";
+                (@PrepaidCardId, @ActionType, @ChangeAmount, @UsageNote, @StoreCode, @UsedAt);";
 
             usage.PrepaidCardId = newCardId;
             conn.Execute(usageQuery, usage, tx);
@@ -93,9 +93,9 @@ public class PrepaidCardRepository
 
             string query = @"
                 INSERT INTO prepaid_card_usages 
-                    (prepaid_card_id, action_type, change_amount, usage_note, used_at)
+                    (prepaid_card_id, action_type, change_amount, usage_note, store_code, used_at)
                 VALUES 
-                    (@PrepaidCardId, @ActionType, @ChangeAmount, @UsageNote, @UsedAt)";
+                    (@PrepaidCardId, @ActionType, @ChangeAmount, @UsageNote, @StoreCode, @UsedAt)";
 
             int result = conn.Execute(query, usage);
 
@@ -214,9 +214,9 @@ public class PrepaidCardRepository
             usage.PrepaidCardId = card.Id;
             string insertLogQuery = @"
             INSERT INTO prepaid_card_usages
-                (prepaid_card_id, action_type, change_amount, usage_note, used_at)
+                (prepaid_card_id, action_type, change_amount, usage_note, store_code, used_at)
             VALUES
-                (@PrepaidCardId, @ActionType, @ChangeAmount, @UsageNote, @UsedAt)";
+                (@PrepaidCardId, @ActionType, @ChangeAmount, @UsageNote, @StoreCode, @UsedAt)";
 
             conn.Execute(insertLogQuery, usage, tx);
 
@@ -229,6 +229,134 @@ public class PrepaidCardRepository
             throw new InvalidOperationException("선불권 사용 처리 중 오류가 발생했습니다.", ex);
         }
     }
+    public async Task<List<PrepaidCardUsageViewModel>> GetPrepaidUsageWithUserInfoAsync(string storeCode)
+    {
+        try
+        {
+            using var conn = DbManager.GetConnection();
+            if (conn == null)
+                throw new InvalidOperationException("DB 연결에 실패했습니다.");
+
+            string query = @"
+            SELECT 
+                u.id AS UsageId,
+                u.action_type AS ActionType,
+                u.change_amount AS ChangeAmount,
+                u.usage_note AS UsageNote,
+                u.used_at AS UsedAt,
+                c.code AS PrepaidCardCode,
+                c.id AS PrepaidCardId,
+                c.purchaser_name AS PurchaserName,
+                c.purchaser_contact AS PurchaserContact
+            FROM prepaid_card_usages u
+            JOIN prepaid_cards c ON u.prepaid_card_id = c.id
+            WHERE u.store_code = @StoreCode
+              AND u.used_at >= NOW() - INTERVAL 1 DAY
+              AND u.action_type IN ('USE', 'RESTORE')
+            ORDER BY u.used_at DESC";
+
+            var result = await conn.QueryAsync<PrepaidCardUsageViewModel>(query, new { StoreCode = storeCode });
+            return result.ToList();
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"[오류] 선불권 사용 이력 조회 실패: {ex.Message}");
+            return new List<PrepaidCardUsageViewModel>(); // 또는 throw;
+        }
+    }
+
+    // 선불권 취소 관련 로직
+
+
+    public async Task<decimal?> GetChangeAmountByUsageIdAsync(string usageId)
+    {
+        using var conn = DbManager.GetConnection();
+        if (conn == null) return null;
+        //취소 개수가 사용 개수보다 많을 경우의 문제를 해결하기 위한 쿼리
+        const string query = @"
+            SELECT change_amount
+            FROM prepaid_card_usages
+            WHERE id = @UsageId";
+
+        return await conn.QueryFirstOrDefaultAsync<decimal?>(query, new { UsageId = usageId });
+    }
+
+    public async Task<PrepaidCardSummary> RestorePrepaidCardUsageAsync(string usageId, decimal cancelAmount, string cardCode, PrepaidCardUsage usageLog)
+    {
+        using var conn = DbManager.GetConnection();
+        if (conn == null) throw new InvalidOperationException("DB 연결에 실패했습니다.");
+
+        using var transaction = conn.BeginTransaction();
+
+        try
+        {
+            // 1. 기존 usage 조회
+            var original = await conn.QueryFirstOrDefaultAsync<dynamic>(
+                @"SELECT change_amount, prepaid_card_id FROM prepaid_card_usages WHERE id = @UsageId FOR UPDATE",
+                new { UsageId = usageId }, transaction);
+
+            if (original == null)
+                throw new InvalidOperationException("선불권 복구중 에러 발생 : UsageId로 DB 조회에 실패했습니다.(로직 오류)");
+
+            usageLog.PrepaidCardId = original.prepaid_card_id;
+            decimal remaining = original.change_amount - cancelAmount;
+            string newAction = remaining == 0 ? "ADJUST" : "USE";
+
+            // 2. 기존 usage 수정
+            await conn.ExecuteAsync(
+                @"UPDATE prepaid_card_usages
+              SET change_amount = @Remaining,
+                  action_type = @ActionType
+              WHERE id = @UsageId",
+                new
+                {
+                    Remaining = remaining,
+                    ActionType = newAction,
+                    UsageId = usageId
+                }, transaction);
+
+            // 3. 카드 업데이트
+            await conn.ExecuteAsync(
+                @"UPDATE prepaid_cards
+              SET remaining_value = remaining_value + @RestoreAmount,
+                  is_active = 1
+              WHERE code = @CardCode",
+                new
+                {
+                    RestoreAmount = cancelAmount,
+                    CardCode = cardCode
+                }, transaction);
+
+            // 4. 복구 로그 삽입
+            await conn.ExecuteAsync(
+                @"INSERT INTO prepaid_card_usages
+              (prepaid_card_id, action_type, change_amount, usage_note, store_code, used_at)
+              VALUES
+              (@PrepaidCardId, @ActionType, @ChangeAmount, @UsageNote, @StoreCode, @UsedAt)",
+                usageLog, transaction);
+
+            var card = await conn.QuerySingleAsync<PrepaidCardSummary>(
+            @"SELECT 
+                purchaser_name AS PurchaserName,
+                purchaser_contact AS PurchaserContact,
+                remaining_value AS RemainingValue
+            FROM prepaid_cards
+            WHERE code = @Code",
+            new { Code = cardCode }, transaction);
+
+            transaction.Commit();
+
+
+            return card;
+        }
+        catch
+        {
+            transaction.Rollback();
+            throw;
+        }
+    }
 
 }
+
+
 

@@ -27,7 +27,7 @@ namespace LTS.Pages.Home
             var currentEmployee = HttpContext.Items["Employee"] as Employee;
             if (currentEmployee == null)
             {
-                // 인증되지 않은 경우나 오류 처리
+                ViewData["Error"] = "직원 정보가 없습니다. 다시 로그인해주세요.(서버 오류)";
                 Customers = [];
                 return;
             }
@@ -125,6 +125,7 @@ namespace LTS.Pages.Home
                     ActionType = "TEST", // 초기 등록
                     ChangeAmount = 0,
                     UsageNote = "초기 구매 자동 등록",
+                    StoreCode = consentData.StoreCode,
                     UsedAt = DateTime.UtcNow
                 });
 
