@@ -50,6 +50,7 @@ public class SessionValidationMiddleware
         catch (Exception e)
         {
             Console.WriteLine($"[오류] 미들웨어에서 오류 발생: {e.Message}\n{e.StackTrace}");
+            await NoticeService.RedirectWithNoticeAsync(context, "인증 과정에서 문제가 발생하였습니다.", "/Home");
             return;
         }
     }
