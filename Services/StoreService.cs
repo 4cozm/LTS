@@ -34,11 +34,14 @@ public static class StoreService
         return _validRoles;
     }
 
-    public static string? GetStoreDisplayName(string storeCode)
+    public static string GetStoreDisplayName(string? storeCode)
     {
+        if (string.IsNullOrWhiteSpace(storeCode))
+            return "지점 정보 없음";
+
         return _storeMap.TryGetValue(storeCode, out var info)
             ? info.Name
-            : storeCode;
+            : $"알 수 없음({storeCode})";
     }
 
     public static string? GetStorePhoneNumber(string storeCode)
