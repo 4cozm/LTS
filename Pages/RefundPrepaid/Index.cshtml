@@ -16,13 +16,14 @@ else if (ViewData["Error"] is string info)
 }
 
 
-<form method="post" asp-page-handler="SendCode" class="mx-auto mt-5" style="max-width: 456px;">
+<form method="post" asp-page-handler="SearchPrepaidDetail" autocomplete="off" class="mx-auto mt-5"
+    style="max-width: 456px;">
     <h2>@ViewData["Title"]</h2>
     <div class="mb-3">
         <label asp-for="PhoneNumber" class="form-label">상세 기록 조회</label>
         <div class="input-group">
-            <input asp-for="PhoneNumber" class="form-control" placeholder="-없이 입력하세요" disabled />
-            <button type="submit" class="btn btn-primary">검색</button>
+            <input asp-for="PhoneNumber" class="form-control" placeholder="-없이 입력하세요" />
+            <button type="submit" class="btn btn-primary h-100 h-100">검색</button>
         </div>
         <span asp-validation-for="PhoneNumber" class="text-danger"></span>
     </div>
@@ -78,9 +79,8 @@ else if (ViewData["Error"] is string info)
 </div>
 
 
-
 @* 취소창 모달 *@
-<form id="useCardForm" method="post" asp-page-handler="CancelPrepaid">
+<form id="useCardForm" method="post" autocomplete="off" asp-page-handler="CancelPrepaid">
     <div class="card" id="purchaseModal" style="display: none;">
         <div class="card-content">
             <p class="card-heading">선불권 취소</p>

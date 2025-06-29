@@ -31,12 +31,12 @@
     <!-- 1. 전화번호 입력 + 발송 버튼 -->
     @if (!Model.IsCodeSent)
     {
-        <form method="post" asp-page-handler="SendCode">
+        <form method="post" autocomplete="off" asp-page-handler="SendCode">
             <div class="mb-3">
                 <label asp-for="PhoneNumber" class="form-label">휴대폰 번호 입력 ("-" 없이)</label>
                 <div class="input-group">
                     <input asp-for="PhoneNumber" class="form-control" placeholder="-없이 입력하세요" />
-                    <button type="submit" class="btn btn-primary">인증번호 발송</button>
+                    <button type="submit" class="btn btn-primary h-100 h-100">인증번호 발송</button>
                 </div>
                 <span asp-validation-for="PhoneNumber" class="text-danger"></span>
             </div>
@@ -50,7 +50,7 @@
     <!-- 2. 인증번호 입력 (발송되었을 때만 보여줌) -->
     @if (Model.IsCodeSent)
     {
-        <form method="post" asp-page-handler="Verify">
+        <form method="post" autocomplete="off" asp-page-handler="Verify">
             <div class="mb-3">
                 <label asp-for="VerificationCode" class="form-label">인증번호 입력</label>
                 <div class="input-group">

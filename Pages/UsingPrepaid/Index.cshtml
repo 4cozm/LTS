@@ -41,8 +41,8 @@
             <div class="mb-3">
                 <label asp-for="PhoneNumber" class="form-label">휴대폰 번호 입력 ("-" 없이)</label>
                 <div class="input-group">
-                    <input asp-for="PhoneNumber" class="form-control" placeholder="-없이 입력하세요" />
-                    <button type="submit" class="btn btn-primary">검색</button>
+                    <input asp-for="PhoneNumber" class="form-control" placeholder="-없이 입력하세요" autocomplete="off" />
+                    <button type="submit" class="btn btn-primary h-100">검색</button>
                 </div>
                 <span asp-validation-for="PhoneNumber" class="text-danger"></span>
             </div>
@@ -58,12 +58,12 @@
             <div class="mb-3">
                 <label asp-for="VerificationCode" class="form-label">인증번호 입력</label>
                 <div class="input-group mb-2">
-                    <input asp-for="VerificationCode" class="form-control" placeholder="6자리" />
+                    <input asp-for="VerificationCode" class="form-control" placeholder="6자리" autocomplete="off" />
                 </div>
                 <span asp-validation-for="VerificationCode" class="text-danger"></span>
                 <div class="d-flex gap-2 justify-content-end">
                     <button type="submit" class="btn btn-secondary" name="action" value="reset">초기화</button>
-                    <button type="submit" class="btn btn-primary" name="action" value="verify">확인</button>
+                    <button type="submit" class="btn btn-primary h-100" name="action" value="verify">확인</button>
                 </div>
             </div>
         </div>
@@ -119,12 +119,12 @@
             <p class="card-heading">선불권 사용</p>
             <p class="card-description"><span id="cardOwner"></span> 고객님의 선불권을 사용합니다.</p>
 
-            <input type="hidden" name="PrepaidCardCode" id="selectedCardCode" />
+            <input type="hidden" name="PrepaidCardCode" id="selectedCardCode" autocomplete="off" />
 
             <div class="form-group">
                 <label for="useAmountInputDisplay" class="form-label">사용할 개수</label>
                 <input type="number" name="UseAmount" id="useAmountInputDisplay" class="form-control" min="1" max="1"
-                    value="1" />
+                    value="1" autocomplete="off" />
                 <small id="maxHint" class="text-muted"></small>
             </div>
         </div>

@@ -11,19 +11,21 @@
         <div asp-validation-summary="All" class="text-danger"></div>
 
         <div class="form-floating mb-3">
-            <input asp-for="Username" class="form-control" id="floatingUsername" placeholder="아이디 입력" />
+            <input asp-for="Username" class="form-control" autocomplete="off" id="floatingUsername"
+                placeholder="아이디 입력" />
             <label for="floatingUsername">ID</label>
             <span asp-validation-for="Username" class="text-danger"></span>
         </div>
 
         <div class="form-floating mb-3">
-            <input asp-for="Password" class="form-control" id="floatingPassword" type="password" placeholder="비밀번호 입력" />
+            <input asp-for="Password" class="form-control" id="floatingPassword" type="password"
+                placeholder="비밀번호 입력" />
             <label for="floatingPassword">PW</label>
             <span asp-validation-for="Password" class="text-danger"></span>
         </div>
 
         <div class="form-group">
-            <button type="submit" class="btn btn-primary w-100">Login</button>
+            <button type="submit" class="btn btn-primary h-100 w-100">Login</button>
         </div>
     </form>
 </div>
@@ -31,5 +33,5 @@
     @await Html.PartialAsync("_ValidationScriptsPartial")
 }
 @section Styles {
-    <link rel="stylesheet" href="~/css/Index.css"/>
+    <link rel="stylesheet" href="~/css/Index.css" />
 }
