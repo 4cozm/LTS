@@ -6,34 +6,6 @@ namespace LTS.Data.Repository;
 
 public class PrepaidCardRepository
 {
-    public PrepaidCard? GetByPhoneNumber(string phoneNumber)
-    {
-        try
-        {
-            using var conn = DbManager.GetConnection();
-            if (conn == null) return null;
-
-            string query = @"
-                SELECT id AS Id, code AS Code, type AS Type,
-                       initial_value AS InitialValue, remaining_value AS RemainingValue,
-                       issued_at AS IssuedAt, expires_at AS ExpiresAt,
-                       is_active AS IsActive, purchaser_name AS PurchaserName,
-                       purchaser_contact AS PurchaserContact, notes AS Notes,
-                       store_code AS StoreCode
-                FROM prepaid_cards
-                WHERE purchaser_contact = @PhoneNumber
-                ORDER BY issued_at DESC
-                LIMIT 1";
-
-            return conn.QueryFirstOrDefault<PrepaidCard>(query, new { PhoneNumber = phoneNumber });
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"[조회 오류] {ex.Message}");
-            throw new InvalidOperationException("선불권 조회 중 오류가 발생했습니다.", ex);
-        }
-    }
-
     public PrepaidCard CreatePrepaidCardWithUsage(PrepaidCard card, PrepaidCardUsage usage)
     {
         try
@@ -354,6 +326,57 @@ public class PrepaidCardRepository
             transaction.Rollback();
             throw;
         }
+    }
+
+    public async Task<List<PrepaidCard>> GetAllPrepaidCardsByPhoneNumberAsync(string phoneNumber)
+    {
+        try
+        {
+            using var conn = DbManager.GetConnection();
+            if (conn == null) return new List<PrepaidCard>();
+
+            string query = @"
+            SELECT id AS Id, code AS Code, type AS Type,
+                   initial_value AS InitialValue, remaining_value AS RemainingValue,
+                   issued_at AS IssuedAt, expires_at AS ExpiresAt,
+                   is_active AS IsActive, purchaser_name AS PurchaserName,
+                   purchaser_contact AS PurchaserContact, notes AS Notes,
+                   store_code AS StoreCode
+            FROM prepaid_cards
+            WHERE purchaser_contact = @PhoneNumber
+            ORDER BY issued_at DESC";
+
+            var result = await conn.QueryAsync<PrepaidCard>(query, new { PhoneNumber = phoneNumber });
+            return result.ToList();
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"[조회 오류] {ex.Message}");
+            throw new InvalidOperationException("전화번호로 선불권 전체 목록 조회 중 오류가 발생했습니다.", ex);
+        }
+    }
+
+    public async Task<List<PrepaidCardUsage>> GetPrepaidUsageListByCardCodeAsync(string cardCode)
+    {
+        using var conn = DbManager.GetConnection();
+        if (conn == null)
+            throw new InvalidOperationException("DB 연결에 실패했습니다.");
+
+        string query = @"
+        SELECT u.id AS Id,
+               u.prepaid_card_id AS PrepaidCardId,
+               u.action_type AS ActionType,
+               u.change_amount AS ChangeAmount,
+               u.usage_note AS UsageNote,
+               u.store_code AS StoreCode,
+               u.used_at AS UsedAt
+        FROM prepaid_card_usages u
+        JOIN prepaid_cards c ON u.prepaid_card_id = c.id
+        WHERE c.code = @CardCode
+        ORDER BY u.used_at DESC";
+
+        var result = await conn.QueryAsync<PrepaidCardUsage>(query, new { CardCode = cardCode });
+        return result.ToList();
     }
 
 }

@@ -1,0 +1,145 @@
+@page
+@model LTS.Pages.SearchPrepaidDetail.IndexModel
+@{
+    ViewData["Title"] = "🔍 선불권 상세 조회";
+}
+<link rel="stylesheet" href="~/css/modal.css" />
+@if (TempData["Message"] is string msg)
+{
+    <div class="alert alert-info">@msg</div>
+}
+else if (ViewData["Error"] is string info)
+{
+    <div class="alert alert-info">@info</div>
+}
+
+<div class="container mt-5">
+    <h2 class="mb-4">보유 선불권 정보</h2>
+
+    <div style="max-height: 400px; overflow-y: auto;">
+        <table class="table table-striped table-hover align-middle text-center">
+            <thead class="table-dark">
+                <tr>
+                    <th>코드</th>
+                    <th>소유자</th>
+                    <th>초기 구매값</th>
+                    <th>남은 갯수</th>
+                    <th>구매일</th>
+                    <th>만료일</th>
+                    <th>구매 매장</th>
+                    <th>작업</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var card in Model.PrepaidCardList)
+                {
+                    <tr>
+                        <td>@card.Code</td>
+                        <td>@card.PurchaserName</td>
+                        <td>@card.InitialValue.ToString("0")개</td>
+                        <td>@card.RemainingValue.ToString("0")개</td>
+                        <td>@card.IssuedAt</td>
+                        <td>@card.ExpiresAt</td>
+                        <td>@StoreService.GetStoreDisplayName(card.StoreCode)</td>
+                        <td>
+                            <button type="button" class="btn btn-sm btn-danger open-cancel-modal-btn" autocomplete="off"
+                                data-code="@(@card.Code)">
+                                상세 조회
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@if (Model.PrepaidCardUsagesList.Count > 0)
+{
+    <div class="container mt-5 mb-5">
+        <h2 class="mb-4">선불권 상세 조회 기록</h2>
+
+        <div style="max-height: 400px; overflow-y: auto;">
+            <table class="table table-striped table-hover align-middle text-center">
+                <thead class="table-dark">
+                    <tr>
+                        <th>작업 타입</th>
+                        <th>변경 수량</th>
+                        <th>사용한 매장</th>
+                        <th>사용일</th>
+                        <th>노트</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var usage in Model.PrepaidCardUsagesList)
+                    {
+                        <tr>
+                            @{
+                                var action = usage.ActionType;
+                                var label = action switch
+                                {
+                                    "USE" => "사용",
+                                    "RESTORE" => "부분 환불",
+                                    "ADJUST" => "전체 환불",
+                                    "TEST" => "초기 구매",
+                                    _ => action
+                                };
+
+                                var css = action switch
+                                {
+                                    "USE" => "text-danger",
+                                    "RESTORE" => "text-success",
+                                    "ADJUST" => "text-primary",
+                                    "TEST" => "text-muted",
+                                    _ => ""
+                                };
+                            }
+                            <td>
+                                <span class="badge @css">@label</span>
+                            </td>
+                            <td>@usage.ChangeAmount.ToString("0")개</td>
+                            <td>@StoreService.GetStoreDisplayName(usage.StoreCode)</td>
+                            <td>@usage.UsedAt</td>
+                            @* DB 스키마 수정 전까지 임시로 분리 *@
+                            @{
+                                var note = usage.UsageNote;
+                                if (string.IsNullOrEmpty(note))
+                                {
+                                    return;
+                                }
+                                var pattern = @"처리자:(?<handler>[^,]+),\s*사유:(?<reason>[^,]+)";
+                                var match = System.Text.RegularExpressions.Regex.Match(note, pattern);
+
+                                var handler = match.Success ? match.Groups["handler"].Value : "";
+                                var reason = match.Success ? match.Groups["reason"].Value : "";
+                            }
+                            <td>처리자: @handler<br />사유: @reason</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+@* 동적 상세조회 버튼용 숨김 필드 *@
+<form id="detailForm" method="post" asp-page="/SearchPrepaidDetail">
+    <input type="hidden" name="code" id="codeInput" />
+</form>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const form = document.getElementById("detailForm");
+        const codeInput = document.getElementById("codeInput");
+
+        document.querySelectorAll(".open-cancel-modal-btn").forEach(function (btn) {
+            btn.addEventListener("click", function () {
+                const code = this.getAttribute("data-code");
+                if (code) {
+                    codeInput.value = code;
+                    form.submit();
+                }
+            });
+        });
+    });
+</script>

@@ -17,17 +17,28 @@ namespace LTS.Pages.RefundPrepaid
         public Employee? CurrentEmployee { get; set; }
         public List<PrepaidCardUsageViewModel> UsageList { get; set; } = new();
 
+        public List<PrepaidCard> PrepaidCardList { get; set; } = new();
+
         public async Task OnGetAsync()
         {
-            CurrentEmployee = HttpContext.Items["Employee"] as Employee;
-            if (CurrentEmployee == null)
+            try
             {
-                ViewData["Error"] = "직원 정보가 없습니다. 다시 로그인해주세요.(서버 오류)";
+                CurrentEmployee = HttpContext.Items["Employee"] as Employee;
+                if (CurrentEmployee == null)
+                {
+                    ViewData["Error"] = "직원 정보가 없습니다. 다시 로그인해주세요.(서버 오류)";
+                    return;
+                }
+
+                var storeCode = CurrentEmployee.Store;
+                UsageList = await cardRepo.GetPrepaidUsageWithUserInfoAsync(storeCode);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"[오류] 선불권 상세조회 중 예외 발생: {e.Message}\n{e.StackTrace}");
+                TempData["Error"] = "선불권 상세조회 중 오류가 발생했습니다";
                 return;
             }
-
-            var storeCode = CurrentEmployee.Store;
-            UsageList = await cardRepo.GetPrepaidUsageWithUserInfoAsync(storeCode);
         }
 
         public async Task<IActionResult> OnPostCancelPrepaidAsync(int CancelAmount, string CancelReason, string PrepaidCardCode, string PrepaidUsageId)
@@ -125,6 +136,26 @@ namespace LTS.Pages.RefundPrepaid
                 return NoticeService.RedirectWithNotice(HttpContext, "선불권 취소중 에러 발생. 취소가 반영되지 않습니다", "/Home");
             }
 
+        }
+
+        public IActionResult OnPostSearchPrepaidDetail(string PhoneNumber)
+        {
+            try
+            {
+                if (!ValidDefaultAttribute.IsValidPhoneNumber(PhoneNumber, out var error))
+                {
+                    ViewData["Error"] = error;
+                    return Page();
+                }
+
+                TempData["PhoneNumber"] = PhoneNumber;
+                return RedirectToPage("/SearchPrepaidDetail/Index");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("상세 기록 조회에서 예상치 못한 오류 발생" + e);
+                return NoticeService.RedirectWithNotice(HttpContext, "상세 기록 조회과정에서 예상치 못한 오류가 발생 하였습니다", "/Home");
+            }
         }
 
     }
