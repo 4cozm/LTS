@@ -1,11 +1,20 @@
 #.git/hook 에 넣어주세요
 
-echo "▶ Running dotnet format..."
-dotnet format ../LTS/LTS.csproj --verify-no-changes
+# 변경된 C# 파일 목록 추출
+FILES=$(git diff --cached --name-only --diff-filter=ACM | grep '\.cs$')
 
-if [ $? -ne 0 ]; then
-  echo "❌ Formatting check failed. Please run 'dotnet format' before committing."
-  exit 1
+if [ -z "$FILES" ]; then
+  echo "변경된 C# 파일이 없습니다. 포맷 스킵."
+  exit 0
 fi
 
-echo "✅ Formatting OK. Proceeding with commit."
+echo "다음 파일 포맷 중:"
+echo "$FILES"
+
+# 변경된 파일만 dotnet format 대상으로 포맷
+for file in $FILES; do
+  dotnet format "$file" --include "$file" --folder --verbosity quiet
+done
+
+# 다시 git add
+git add $FILES
