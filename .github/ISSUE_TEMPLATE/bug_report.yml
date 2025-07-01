@@ -1,22 +1,24 @@
 name: Bug Report
-description: 버그를 발견했을 때 작성하는 템플릿
+description: 버그를 신고합니다
 title: "[Bug] "
 labels: ["bug"]
 body:
   - type: textarea
     attributes:
       label: 버그 설명
-      description: 어떤 문제가 발생했는지 명확히 적어주세요.
-      placeholder: 예: 로그인 시 화면이 멈춤
+      description: 어떤 문제가 발생했는지 명확하게 써주세요.
+      placeholder: 예) 로그인 시도 시 페이지가 멈춤
   - type: textarea
     attributes:
       label: 재현 절차
-      description: 문제가 발생한 절차를 단계별로 적어주세요.
+      description: 버그가 어떻게 발생하는지 단계별로 적어주세요.
       placeholder: |
-        1. 로그인 버튼 클릭
-        2. 아이디 입력
-        3. 오류 발생
+        1. 메인 페이지 접속
+        2. 로그인 클릭
+        3. 비밀번호 입력
+        4. 멈춤 현상 발생
   - type: input
     attributes:
-      label: 브라우저/환경
-      placeholder: 예: Chrome 125 / Windows 11
+      label: 환경 정보
+      description: 사용한 브라우저, OS 등
+      placeholder: 예) Chrome 125 / Windows 11
