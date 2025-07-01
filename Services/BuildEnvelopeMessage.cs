@@ -1,5 +1,8 @@
 //프로토버프를 위한 직렬화 함수
 using CommsProto;
+
+
+
 using Google.Protobuf;
 public static class ProtoMessageBuilder
 {
