@@ -1,20 +1,34 @@
-#.git/hook 에 넣어주세요
+#!/bin/sh
 
-# 변경된 C# 파일 목록 추출
+# 변경된 .cs 파일만 추출
 FILES=$(git diff --cached --name-only --diff-filter=ACM | grep '\.cs$')
 
 if [ -z "$FILES" ]; then
-  echo "변경된 C# 파일이 없습니다. 포맷 스킵."
+  echo "변경된 C# 파일이 없습니다. 포맷 검사 생략"
   exit 0
 fi
 
-echo "다음 파일 포맷 중:"
+echo "변경된 파일 확인됨:"
 echo "$FILES"
 
-# 변경된 파일만 dotnet format 대상으로 포맷
-for file in $FILES; do
-  dotnet format "$file" --include "$file" --folder --verbosity quiet
-done
+# 루트 경로 기준 프로젝트 찾기
+ROOT_PROJECT=$(find . -name '*.csproj' | head -n 1)
 
-# 다시 git add
-git add $FILES
+if [ -z "$ROOT_PROJECT" ]; then
+  echo "csproj 파일을 찾을 수 없습니다. 포맷 불가"
+  exit 1
+fi
+
+# 전체 프로젝트 대상으로 포맷 검사 (실제 diff 난 파일만 체크)
+echo "dotnet format 검사를 수행합니다..."
+dotnet format "$ROOT_PROJECT" --verify-no-changes --verbosity minimal
+
+FORMAT_EXIT_CODE=$?
+
+if [ $FORMAT_EXIT_CODE -ne 0 ]; then
+  echo "❌ 코드 포맷이 맞지 않습니다. 커밋 전에 'dotnet format' 실행 후 다시 시도하세요."
+  exit 1
+fi
+
+echo "✅ 코드 포맷 정상. 커밋을 진행합니다."
+exit 0
