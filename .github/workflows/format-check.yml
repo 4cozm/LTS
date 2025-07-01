@@ -1,0 +1,24 @@
+name: Format Check
+
+on:
+  pull_request:
+    branches: [ dev ]
+
+jobs:
+  check-formatting:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0' 
+
+      - name: Restore Dependencies
+        run: dotnet restore
+
+      - name: Verify Formatting
+        run: dotnet format --verify-no-changes --verbosity detailed
