@@ -1,16 +1,16 @@
 name: Task
-description: 해야 할 일 단위로 기록
+description: 해야 할 작업 단위로 기록합니다
 title: "[Task] "
 labels: ["task"]
 body:
   - type: textarea
     attributes:
-      label: 작업 설명
-      placeholder: 예: Redis 연결 로직 리팩토링
+      label: 작업 내용
+      placeholder: 예) Redis 캐시 초기화 로직 개선
   - type: input
     attributes:
       label: 예상 소요 시간
-      placeholder: 예: 2시간
+      placeholder: 예) 2시간
   - type: dropdown
     attributes:
       label: 우선순위
