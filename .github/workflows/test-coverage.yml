@@ -24,7 +24,7 @@ jobs:
       run: dotnet test LTS.Tests/LTS.Tests.csproj --collect:"XPlat Code Coverage"
 
     - name: Generate coverage report
-      run: >
+      run: |
         reportgenerator \
           -reports:"**/coverage.cobertura.xml" \
           -targetdir:"coverage-report" \
