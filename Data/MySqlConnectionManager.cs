@@ -25,7 +25,7 @@ public static class DbManager
         catch (MySqlException ex)
         {
             Console.WriteLine($"DB 연결 실패: {ex.Message}");
-            
+
             return null;
         }
     }
