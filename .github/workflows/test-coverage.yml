@@ -2,41 +2,44 @@ name: .NET Test & Coverage
 
 on:
   pull_request:
-    branches: [ "Dev" ]
+    branches: ['Dev']
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: '9.0.x'
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
 
-    - name: Install dependencies
-      run: dotnet restore
+      - name: Install dependencies
+        run: dotnet restore
 
-    - name: Run tests with coverage
-      run: dotnet test LTS.Tests/LTS.Tests.csproj --collect:"XPlat Code Coverage"
+      - name: Run tests with coverage
+        run: dotnet test LTS.Tests/LTS.Tests.csproj --collect:"XPlat Code Coverage"
 
-    - name: Install ReportGenerator
-      run: dotnet tool install -g dotnet-reportgenerator-globaltool
+      - name: Install ReportGenerator
+        run: dotnet tool install -g dotnet-reportgenerator-globaltool
 
-    - name: Generate coverage report
-      run: |
-        reportgenerator \
-          -reports:"**/coverage.cobertura.xml" \
-          -targetdir:"coverage-report" \
-          -reporttypes:Html
-      env:
-        PATH: ${{ runner.tool_cache }}/dotnet/tools:${{ env.PATH }}
+      - name: Add tool path to environment
+        run: echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
 
-    - name: Upload coverage report artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: coverage-report
-        path: coverage-report
+      - name: Generate coverage report
+        run: |
+          reportgenerator \
+            -reports:"**/coverage.cobertura.xml" \
+            -targetdir:"coverage-report" \
+            -reporttypes:Html
+        env:
+          PATH: ${{ runner.tool_cache }}/dotnet/tools:${{ env.PATH }}
+
+      - name: Upload coverage report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage-report
