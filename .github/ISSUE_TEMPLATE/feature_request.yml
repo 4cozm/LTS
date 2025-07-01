@@ -1,0 +1,17 @@
+name: Feature Request
+description: 새로운 기능을 제안할 때
+title: "[Feature] "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    attributes:
+      label: 제안 기능 설명
+      placeholder: 예: 선불권 잔여 수량을 프론트에서 실시간으로 볼 수 있게
+  - type: textarea
+    attributes:
+      label: 기대 효과
+      placeholder: 예: 고객이 확인 전화를 하지 않아도 되도록
+  - type: textarea
+    attributes:
+      label: 구현 방식 (선택)
+      description: 구현 방법에 대한 아이디어가 있다면 자유롭게 적어주세요

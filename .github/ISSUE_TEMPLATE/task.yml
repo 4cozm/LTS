@@ -1,0 +1,20 @@
+name: Task
+description: 해야 할 일 단위로 기록
+title: "[Task] "
+labels: ["task"]
+body:
+  - type: textarea
+    attributes:
+      label: 작업 설명
+      placeholder: 예: Redis 연결 로직 리팩토링
+  - type: input
+    attributes:
+      label: 예상 소요 시간
+      placeholder: 예: 2시간
+  - type: dropdown
+    attributes:
+      label: 우선순위
+      options:
+        - 🔴 높음
+        - 🟡 중간
+        - ⚪ 낮음
