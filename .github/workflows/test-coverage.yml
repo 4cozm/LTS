@@ -1,39 +1,35 @@
-name: .NET Core with Coverage
+name: Test Coverage
 
 on:
   pull_request:
-    branches: [ dev ]
+    branches: [ "Dev" ]
+  push:
+    branches: [ "Dev" ]
 
 jobs:
   build:
+    name: Run Tests with Coverage
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: 9.0.x
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x" 
 
-    - name: Restore dependencies
-      run: dotnet restore
+      - name: Restore dependencies
+        run: dotnet restore
 
-    - name: Test with coverage
-      run: dotnet test LTS.Tests/LTS.Tests.csproj --collect:"XPlat Code Coverage"
+      - name: Run Tests and collect coverage
+        run: dotnet test LTS.Tests/LTS.Tests.csproj --collect:"XPlat Code Coverage"
 
-    - name: Install ReportGenerator
-      run: dotnet tool install --global dotnet-reportgenerator-globaltool
-
-    - name: Generate coverage report
-      run: |
-        reportgenerator \
-          -reports:"**/coverage.cobertura.xml" \
-          -targetdir:"coveragereport" \
-          -reporttypes:Html
-
-    - name: Upload coverage report artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: coverage-report
-        path: coveragereport
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          files: ./LTS.Tests/TestResults/**/*.cobertura.xml
+          flags: unittests
+          name: codecov-coverage
+          fail_ci_if_error: true
