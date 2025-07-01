@@ -37,7 +37,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <Protobuf Include="Data/protobuf/common.proto" GrpcServices="None" />
+    <Protobuf Include="Data/Protobuf/common.proto" GrpcServices="None" />
   </ItemGroup>
 
 </Project>
