@@ -1,19 +1,18 @@
-name: Test Coverage
+name: .NET Core with Coverage
 
 on:
   pull_request:
-  push:
-    branches: [ dev, main ]
+    branches: [ dev ]
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@v3
+      uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 9.0.x
 
@@ -23,15 +22,18 @@ jobs:
     - name: Test with coverage
       run: dotnet test LTS.Tests/LTS.Tests.csproj --collect:"XPlat Code Coverage"
 
-    - name: Generate coverage report
-      uses: danielpalme/ReportGenerator-GitHub-Action@5.2.5
-      with:
-        reports: "**/coverage.cobertura.xml"
-        targetdir: "coveragereport"
-        reporttypes: "HtmlInline_AzurePipelines"
+    - name: Install ReportGenerator
+      run: dotnet tool install --global dotnet-reportgenerator-globaltool
 
-    - name: Upload coverage report
+    - name: Generate coverage report
+      run: |
+        reportgenerator \
+          -reports:"**/coverage.cobertura.xml" \
+          -targetdir:"coveragereport" \
+          -reporttypes:Html
+
+    - name: Upload coverage report artifact
       uses: actions/upload-artifact@v4
       with:
-        name: code-coverage-report
+        name: coverage-report
         path: coveragereport
