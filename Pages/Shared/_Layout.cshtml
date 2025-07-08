@@ -89,6 +89,10 @@
             </li>
         </ul>
 
+
+        <button class="btn btn-danger position-absolute top-0 start-0 m-3 logout">로그아웃</button>
+
+
     }
 
     <div class="container">
@@ -108,6 +112,12 @@
         document.addEventListener('DOMContentLoaded', function () {
             const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
             tooltipTriggerList.forEach(el => new bootstrap.Tooltip(el));
+        });
+
+        document.querySelector(".logout").addEventListener("click", async () => {
+            await fetch("/api/logout", { method: "POST" });
+            location.href = "/Index";
+            alert("로그아웃 완료");
         });
     </script>
 
