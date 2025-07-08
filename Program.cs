@@ -23,6 +23,17 @@ app.UseStaticFiles();
 app.UseRouting();
 app.MapRazorPages();
 app.MapHub<StatusHub>("/statusHub");
+app.MapPost("/api/logout", (HttpContext context) =>
+{
+    var token = context.Request.Cookies["LTS-Session"];
+    if (!string.IsNullOrEmpty(token))
+    {
+        SessionStore.RemoveSession(token); // 서버 메모리에서 제거
+        context.Response.Cookies.Delete("LTS-Session"); // 클라이언트에서 제거
+    }
+    return Results.Ok();
+});
+
 app.UseMiddleware<SessionValidationMiddleware>();
 
 
