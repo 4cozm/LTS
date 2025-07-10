@@ -18,6 +18,7 @@ builder.Services
 ConfigureWeb(builder.Services);
 
 var app = builder.Build();
+app.Urls.Add("http://localhost:5000"); // Caddy가 알아서 Https로 변환해줌
 app.UseSession();
 app.UseStaticFiles();
 app.UseRouting();
