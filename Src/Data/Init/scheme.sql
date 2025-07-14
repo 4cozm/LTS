@@ -1,5 +1,5 @@
 USE lts_core;
-
+SET NAMES utf8mb4;
 -- User account table
 CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -94,4 +94,29 @@ CREATE TABLE employees (
     work_start_date DATE NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     created_by_member VARCHAR(20)                  -- Creator identifier
+);
+
+-- setup initial account
+INSERT INTO employees (
+    initials,
+    name,
+    phone_number,
+    password,
+    is_password_changed,
+    store,
+    role_name,
+    work_start_date,
+    created_at,
+    created_by_member
+) VALUES (
+    'SYJ',
+    '사장님',
+    '01043067088',
+    '$2a$11$qGIiFUo63QjmHBZmSmbDKeZzNNG1rHDaOd.wbgHR.S9myciUWZ.EK',
+    0,
+    'GA',
+    'Owner',
+    '2025-07-14',
+    '2025-07-14 11:59:04',
+    'System'
 );
