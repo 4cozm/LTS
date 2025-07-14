@@ -1,4 +1,6 @@
-﻿namespace LTS.Tests;
+﻿using Xunit;
+
+namespace LTS.Tests;
 
 public class UnitTest1
 {
