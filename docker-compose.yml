@@ -11,7 +11,7 @@ services:
     ports:
       - '127.0.0.1:3306:3306'
     volumes:
-      - ./Data/Init:/docker-entrypoint-initdb.d
+      - .Src/Data/Init:/docker-entrypoint-initdb.d
     command: --default-authentication-plugin=mysql_native_password
 
   redis:
