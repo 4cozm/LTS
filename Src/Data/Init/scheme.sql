@@ -68,16 +68,30 @@ CREATE TABLE prepaid_cards (
     store_code VARCHAR(20) NOT NULL                -- Associated store
 );
 
--- Prepaid card usage history
-CREATE TABLE prepaid_card_usages (
+
+CREATE TABLE prepaid_card_usage_state (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    prepaid_card_id INT NOT NULL,
-    action_type ENUM('USE', 'RESTORE', 'ADJUST', 'TEST') NOT NULL DEFAULT 'USE',
-    change_amount DECIMAL(10,2) NOT NULL,          -- Amount or count used
-    usage_note TEXT,                               -- Optional comment
-    used_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    prepaid_card_id INT NOT NULL UNIQUE,
+    total_quantity DECIMAL(10,2) NOT NULL,
+    used_quantity DECIMAL(10,2) NOT NULL DEFAULT 0,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP 
+                 ON UPDATE CURRENT_TIMESTAMP,
     store_code VARCHAR(20) NOT NULL,
 
+    FOREIGN KEY (prepaid_card_id) REFERENCES prepaid_cards(id) ON DELETE CASCADE
+);
+
+-- Prepaid card usage history
+CREATE TABLE prepaid_card_usage_logs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    prepaid_card_id INT NOT NULL,
+    action_type ENUM('PURCHASE', 'USE', 'CANCEL', 'RESTORE', 'ADJUST', 'TEST') 
+        NOT NULL DEFAULT 'USE',
+    change_amount DECIMAL(10,2) NOT NULL,
+    handler_name VARCHAR(50),
+    reason VARCHAR(255),
+    logged_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    store_code VARCHAR(20) NOT NULL,
     FOREIGN KEY (prepaid_card_id) REFERENCES prepaid_cards(id) ON DELETE CASCADE
 );
 
