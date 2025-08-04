@@ -71,9 +71,10 @@ CREATE TABLE prepaid_cards (
 
 CREATE TABLE prepaid_card_usage_state (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    prepaid_card_id INT NOT NULL UNIQUE,
-    total_quantity DECIMAL(10,2) NOT NULL,
-    used_quantity DECIMAL(10,2) NOT NULL DEFAULT 0,
+    prepaid_card_id INT NOT NULL,
+    usage_quantity DECIMAL(10,2) NOT NULL,
+    remaining_quantity DECIMAL(10,2) NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP 
                  ON UPDATE CURRENT_TIMESTAMP,
     store_code VARCHAR(20) NOT NULL,
