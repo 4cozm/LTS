@@ -6,6 +6,7 @@ using LTS.Utils;
 using CommsProto;
 using LTS.Models;
 using LTS.Data.Repository;
+using LTS.Models.Base;
 
 namespace LTS.Pages.UsingPrepaid
 {
@@ -193,13 +194,13 @@ namespace LTS.Pages.UsingPrepaid
                 throw new InvalidOperationException("직원 정보 또는 매장 코드가 없습니다.");
             }
 
-            var usage = new PrepaidCardUsage
+            var usage = new PrepaidCardUsageLog
             {
                 ActionType = "USE",
                 ChangeAmount = UseAmount.Value,
-                UsageNote = $"사용 승인 직원:{CurrentEmployee.Name}",
+                HandlerName = CurrentEmployee.Name,
                 StoreCode = CurrentEmployee.Store,
-                UsedAt = DateTime.UtcNow
+                LoggedAt = DateTime.UtcNow
             };
 
             var updatedCard = cardRepo.UsePrepaidCardByCode(PrepaidCardCode, UseAmount.Value, usage);

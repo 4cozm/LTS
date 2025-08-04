@@ -1,6 +1,8 @@
 using Dapper;
 using LTS.Models;
+using LTS.Models.Base;
 using MySql.Data.MySqlClient;
+using Mysqlx.Crud;
 
 namespace LTS.Data.Repository;
 
@@ -141,7 +143,7 @@ public class PrepaidCardRepository
         }
     }
 
-    public PrepaidCard UsePrepaidCardByCode(string code, int useAmount, PrepaidCardUsage usage)
+    public PrepaidCard UsePrepaidCardByCode(string code, int useAmount, PrepaidCardUsageLog usage)
     {
         try
         {
@@ -185,12 +187,25 @@ public class PrepaidCardRepository
             // 로그 기록
             usage.PrepaidCardId = card.Id;
             string insertLogQuery = @"
-            INSERT INTO prepaid_card_usages
-                (prepaid_card_id, action_type, change_amount, usage_note, store_code, used_at)
+            INSERT INTO prepaid_card_usage_logs
+                (prepaid_card_id, action_type, change_amount, handler_name, store_code, logged_at)
             VALUES
-                (@PrepaidCardId, @ActionType, @ChangeAmount, @UsageNote, @StoreCode, @UsedAt)";
+                (@PrepaidCardId, @ActionType, @ChangeAmount, @HandlerName, @StoreCode, @LoggedAt)";
 
             conn.Execute(insertLogQuery, usage, tx);
+
+            string insertUsageStateQuery = @"
+            INSERT INTO prepaid_card_usage_state
+                (prepaid_card_id, used_quantity, remaining_quantity)
+            VALUES
+                (@PrepaidCardId, @UsedQuantity, @RemainingQuantity)";
+
+            conn.Execute(insertUsageStateQuery, new
+            {
+                PrepaidCardId = card.Id,
+                RemainingQuantity = usage.ChangeAmount,
+                UsedQuantity = usage.ChangeAmount,
+            }, tx);
 
             tx.Commit();
             return card;
