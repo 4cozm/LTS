@@ -96,6 +96,7 @@ namespace LTS.Pages.Home
                 var displayName = selectedProduct.DisplayName;
                 var prepaidCardPrice = selectedProduct.Price.ToString("N0"); ;
                 var initialValue = selectedProduct.Count;
+                var expiresAt = selectedProduct.ExpiresAt;
 
                 //생성 시작
                 if (HttpContext.Items.TryGetValue("Employee", out var employeeObj))
@@ -110,7 +111,7 @@ namespace LTS.Pages.Home
                     InitialValue = initialValue,
                     RemainingValue = initialValue,
                     IssuedAt = issuedAt,
-                    ExpiresAt = issuedAt.AddMonths(6),
+                    ExpiresAt = issuedAt.AddMonths(expiresAt),
                     IsActive = true,
                     PurchaserName = consentData.Name,
                     PurchaserContact = digitsOnly,
@@ -142,7 +143,7 @@ namespace LTS.Pages.Home
                         {"고객명",consentData.Name},
                         {"상품명",displayName},
                         {"결제금액",prepaidCardPrice},
-                        {"유효기간",PrintCurrentDate.PrintDate(DateTime.UtcNow.AddMonths(6))}, //유효기간 6개월
+                        {"유효기간",PrintCurrentDate.PrintDate(DateTime.UtcNow.AddMonths(expiresAt))}, //유효기간은 Data/catalogs 참조
                         {"남은횟수",initialValue.ToString()},
                         {"매장전화번호",StoreService.GetStorePhoneNumber(CurrentEmployee!.Store!)}
                     }
