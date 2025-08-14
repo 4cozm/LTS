@@ -2,6 +2,7 @@ using LTS.Base;
 using LTS.Services;
 using System.Text.Json;
 using LTS.Models;
+using LTS.Models.Base;
 using Microsoft.AspNetCore.Mvc;
 using LTS.Utils;
 using LTS.Data.Repository;
@@ -102,6 +103,10 @@ namespace LTS.Pages.Home
                 {
                     CurrentEmployee = employeeObj as Employee;
                 }
+                if (CurrentEmployee == null)
+                {
+                    return NoticeService.RedirectWithNotice(HttpContext, "직원 정보가 없습니다. 다시 로그인해주세요.(서버 오류)", "/Home");
+                }
 
                 var card = new PrepaidCard
                 {
@@ -120,13 +125,14 @@ namespace LTS.Pages.Home
                         $"담당자: {CurrentEmployee?.Name}"
                 };
 
-                var createdCard = repo.CreatePrepaidCardWithUsage(card, new PrepaidCardUsage
+                var createdCard = repo.CreatePrepaidCardWithUsage(card, new PrepaidCardUsageLogs
                 {
-                    ActionType = "TEST", // 초기 등록
+                    ActionType = "PURCHASE", // 초기 등록
                     ChangeAmount = 0,
-                    UsageNote = "초기 구매 자동 등록",
+                    HandlerName = CurrentEmployee?.Name,
                     StoreCode = consentData.StoreCode,
-                    UsedAt = DateTime.UtcNow
+                    Reason = "초기 구매",
+                    LoggedAt = issuedAt,
                 });
 
                 db.KeyDelete(redisKey);

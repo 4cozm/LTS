@@ -1,6 +1,6 @@
 namespace LTS.Models.Base;
 
-public class PrepaidCardUsageLog
+public class PrepaidCardUsageLogs
 {
     public int Id { get; set; }
     public int PrepaidCardId { get; set; }

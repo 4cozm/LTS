@@ -72,7 +72,7 @@ namespace LTS.Pages.RefundPrepaid
 
                 decimal cancelDecimal = CancelAmount; //미리 int형을 decimal로 변환(DB기준에 맞춤)
 
-                //2.사용한 개수 이상으로 취소할 경우를 검증
+                //2.사용한 개수 이상으로 취소할 경우를 검증 
                 var usageAmount = await cardRepo.GetChangeAmountByUsageIdAsync(PrepaidUsageId);
                 if (usageAmount == null)
                 {
