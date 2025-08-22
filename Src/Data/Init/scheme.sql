@@ -72,14 +72,24 @@ CREATE TABLE prepaid_cards (
 CREATE TABLE prepaid_card_usages (
     id INT AUTO_INCREMENT PRIMARY KEY,
     prepaid_card_id INT NOT NULL,
-    action_type ENUM('USE', 'RESTORE', 'ADJUST', 'TEST') NOT NULL DEFAULT 'USE',
-    change_amount DECIMAL(10,2) NOT NULL,          -- Amount or count used
-    usage_note TEXT,                               -- Optional comment
+    related_usage_id INT NULL,  -- this column will fill when action_type is "PURCHASE_CANCEL" 
+
+    action_type ENUM('PURCHASE','PURCHASE_CANCEL','USE','RESTORE','ADJUST','TEST') NOT NULL DEFAULT 'USE',
+    change_amount DECIMAL(10,2) NOT NULL,       -- plus: PURCHASE/RESTORE/ADJUST, minus: PURCHASE_CANCEL/USE/ADJUST
+    usage_note TEXT,
+    handler_name VARCHAR(100) NULL,
+    reason VARCHAR(255) NULL,
     used_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     store_code VARCHAR(20) NOT NULL,
 
-    FOREIGN KEY (prepaid_card_id) REFERENCES prepaid_cards(id) ON DELETE CASCADE
+    FOREIGN KEY (prepaid_card_id) REFERENCES prepaid_cards(id) ON DELETE CASCADE,
+    FOREIGN KEY (related_usage_id) REFERENCES prepaid_card_usages(id) ON DELETE SET NULL,
+
+    INDEX idx_pcu_store_action_usedat (store_code, action_type, used_at),
+    INDEX idx_pcu_related_action (related_usage_id, action_type),
+    INDEX idx_pcu_card_usedat (prepaid_card_id, used_at)
 );
+
 
 -- Employee account table
 CREATE TABLE employees (
