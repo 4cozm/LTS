@@ -99,14 +99,14 @@ namespace LTS.Pages.UsingPrepaid
                 // 2. 만료일 확인 (null이면 무제한)
                 if (card.ExpiresAt is DateTime expiry && expiry < DateTime.UtcNow)
                 {
-                    ModelState.AddModelError("", "이 선불권은 이미 만료되었습니다.");
+                    ModelState.AddModelError("", $"이 선불권은 이미 만료되었습니다. 유효기간 {card.ExpiresAt} ");
                     return Page();
                 }
 
                 // 3. 활성 상태 확인
                 if (!card.IsActive)
                 {
-                    ModelState.AddModelError("", "이 선불권은 비활성화된 상태입니다.");
+                    ModelState.AddModelError("", "이 선불권은 모두 사용되어 비활성화된 상태입니다.");
                     return Page();
                 }
                 string VerifyCode = GenerateCodeUtils.GenerateVerificationCode();

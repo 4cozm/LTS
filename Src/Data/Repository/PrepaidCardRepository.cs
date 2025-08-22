@@ -195,7 +195,7 @@ public class PrepaidCardRepository
             VALUES
                 (@PrepaidCardId, @UsedQuantity, @RemainingQuantity, @StoreCode)";
 
-            conn.Execute(insertUsageStateQuery, new
+            conn.Execute(insertUsageStateQuery, new PrepaidCardUsageState
             {
                 PrepaidCardId = card.Id,
                 UsedQuantity = usage.ChangeAmount,
@@ -372,7 +372,7 @@ public class PrepaidCardRepository
         }
     }
 
-    public async Task<List<PrepaidCardUsage>> GetPrepaidUsageListByCardCodeAsync(string cardCode)
+    public async Task<List<PrepaidCardUsageLogs>> GetPrepaidUsageListByCardCodeAsync(string cardCode)
     {
         using var conn = DbManager.GetConnection();
         if (conn == null)
@@ -391,7 +391,7 @@ public class PrepaidCardRepository
         WHERE c.code = @CardCode
         ORDER BY u.used_at DESC";
 
-        var result = await conn.QueryAsync<PrepaidCardUsage>(query, new { CardCode = cardCode });
+        var result = await conn.QueryAsync<PrepaidCardUsageLogs>(query, new { CardCode = cardCode });
         return result.ToList();
     }
 
