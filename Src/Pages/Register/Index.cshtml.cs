@@ -124,7 +124,7 @@ namespace LTS.Pages.Register
                 {
                     KakaoAlert = new SendKakaoAlertNotification
                     {
-                        TemplateTitle = "직원 등록",
+                        TemplateTitle = "직원 등록 안내",
                         Receiver = PhoneNumber,
                         Variables =
                     {
