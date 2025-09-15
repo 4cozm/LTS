@@ -21,15 +21,15 @@ public static class PrepaidProductCatalog
             Code = "bronze",
             DisplayName = "브론즈권",
             Count = 20,
-            Price = 100000,
+            Price = 110000,
             ExpiresAt = 6 //6개월
         },
         ["silver"] = new ProductInfo
         {
             Code = "silver",
             DisplayName = "실버권",
-            Count = 44,
-            Price = 200000,
+            Count = 50,
+            Price = 250000,
             ExpiresAt = 12 //12개월
         },
         ["gold"] = new ProductInfo
@@ -37,7 +37,7 @@ public static class PrepaidProductCatalog
             Code = "gold",
             DisplayName = "골드권",
             Count = 100,
-            Price = 400000,
+            Price = 450000,
             ExpiresAt = 12 //12개월
         }
     };
