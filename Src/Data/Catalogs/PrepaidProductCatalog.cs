@@ -36,8 +36,8 @@ public static class PrepaidProductCatalog
         {
             Code = "gold",
             DisplayName = "골드권",
-            Count = 100,
-            Price = 400000,
+            Count = 75,
+            Price = 300000,
             ExpiresAt = 12 //12개월
         }
     };
